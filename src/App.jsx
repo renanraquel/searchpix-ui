@@ -59,7 +59,7 @@ function App() {
     setErroLogin("")
 
     try {
-      const response = await fetch("http://localhost:8080/login", {
+      const response = await fetch("https://searchpix.onrender.com/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -104,7 +104,7 @@ function App() {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/pix?inicio=${inicio}&fim=${fim}`,
+        `https://searchpix.onrender.com/pix?inicio=${inicio}&fim=${fim}`,
         {
           headers: {
             Authorization: `Bearer ${token}`
