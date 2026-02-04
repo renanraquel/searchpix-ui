@@ -42,7 +42,7 @@ function App() {
 
   /* ---------- PAGINAÇÃO ---------- */
   const [paginaAtual, setPaginaAtual] = useState(1)
-  const itensPorPagina = 10
+  const itensPorPagina = 8
 
   /* =======================
      Recupera token salvo
@@ -144,6 +144,9 @@ function App() {
   const pixPaginado = pixList.slice(inicioPagina, fimPagina)
   const totalPaginas = Math.ceil(pixList.length / itensPorPagina)
 
+  /* Soma de todos os valores (lista completa, não só a página atual) */
+  const valorTotalPix = pixList.reduce((acc, p) => acc + Number(p.valor), 0)
+
   /* =======================
      RENDERIZAÇÃO CONDICIONAL
   ======================= */
@@ -230,16 +233,16 @@ function App() {
     <div 
       style={{ 
         minHeight: "100vh", 
-        width: "100%",        // Ocupa 100% da largura
-        padding: "24px", 
+        width: "100%",
+        padding: "24px 32px", 
         boxSizing: "border-box",
-        backgroundColor: "#fff" // Fundo totalmente branco, removendo o cinza
+        backgroundColor: "#fff"
       }}
     >
       <div
         style={{
-          width: "100%",       // Expande o conteúdo interno
-          margin: "0 auto"
+          width: "100%",
+          minWidth: 0
         }}
       >
         <div
@@ -268,14 +271,15 @@ function App() {
           </button>
         </div>
 
-        {/* FORMULÁRIO ESTICADO */}
+        {/* Formulário de pesquisa – ocupa toda a largura disponível */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr 250px", // Botão um pouco maior para equilibrar
-            gap: "20px",
-            marginBottom: "30px",
-            alignItems: "end"
+            gridTemplateColumns: "180px 180px auto",
+            gap: "16px",
+            marginBottom: "20px",
+            alignItems: "end",
+            width: "fit-content"
           }}
         >
           <div>
@@ -284,7 +288,7 @@ function App() {
               type="date" 
               value={inicio} 
               onChange={(e) => setInicio(e.target.value)} 
-              style={{ width: "100%", height: "42px", padding: "8px", fontSize: "16px", boxSizing: "border-box" }} 
+              style={{ width: "100%", height: "38px", padding: "6px 10px", fontSize: "14px", boxSizing: "border-box", borderRadius: "6px", border: "1px solid #ccc" }} 
             />
           </div>
           <div>
@@ -293,20 +297,21 @@ function App() {
               type="date" 
               value={fim} 
               onChange={(e) => setFim(e.target.value)} 
-              style={{ width: "100%", height: "42px", padding: "8px", fontSize: "16px", boxSizing: "border-box" }} 
+              style={{ width: "100%", height: "38px", padding: "6px 10px", fontSize: "14px", boxSizing: "border-box", borderRadius: "6px", border: "1px solid #ccc" }} 
             />
           </div>
           <button 
             onClick={buscarPix} 
             disabled={loading}
             style={{ 
-              height: "42px", 
+              height: "38px", 
               width: "100%", 
+              minWidth: "120px",
               cursor: "pointer", 
               backgroundColor: "#0052cc", 
               color: "#fff", 
               border: "none", 
-              borderRadius: "4px",
+              borderRadius: "6px",
               fontSize: "16px",
               fontWeight: "bold"
             }}
@@ -356,12 +361,22 @@ function App() {
                       <td>{formatarDataHora(pix.horario)}</td>
                       <td>{pix.cpf}</td>
                       <td>{pix.nome}</td>
-                      <td style={{ textAlign: "right", fontWeight: "700", color: "#2e7d32" }}>
+                      <td style={{ textAlign: "right", fontWeight: "700", color: "#2e7d32", fontSize: "18px" }}>
                         {formatarValorBR(pix.valor)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
+                <tfoot>
+                  <tr style={{ borderTop: "2px solid #eee", backgroundColor: "#f8f9fa" }}>
+                    <td colSpan={3} style={{ padding: "15px", textAlign: "right", fontWeight: "600" }}>
+                      Soma Total PIX:
+                    </td>
+                    <td style={{ padding: "15px", textAlign: "right", fontWeight: "700", color: "#0052cc", fontSize: "18px" }}>
+                      {formatarValorBR(valorTotalPix)}
+                    </td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
 
