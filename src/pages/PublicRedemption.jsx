@@ -99,6 +99,9 @@ export default function PublicRedemption() {
           justifyContent: "center",
           alignItems: "flex-start",
           padding: 24,
+          boxSizing: "border-box",
+          width: "100%",
+          overflowX: "hidden",
         }}
       >
         <div
@@ -110,6 +113,8 @@ export default function PublicRedemption() {
             borderRadius: 16,
             backgroundColor: "rgba(255,255,255,0.96)",
             boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+            boxSizing: "border-box",
+            overflow: "hidden",
           }}
         >
           <h1 style={{ marginBottom: 8 }}>{data?.tenant?.name || "Carregando..."}</h1>
@@ -171,14 +176,26 @@ export default function PublicRedemption() {
                   backgroundColor: "#f0f4ff",
                   border: "1px solid #c5d4f0",
                   borderRadius: 12,
-                  padding: "28px 32px",
+                  padding: "20px 16px",
                   marginBottom: 32,
                   width: "100%",
                   maxWidth: 480,
+                  boxSizing: "border-box",
+                  minWidth: 0,
+                  overflow: "hidden",
                 }}
               >
                 <div style={{ fontSize: 14, color: "#555", marginBottom: 6, fontWeight: 600 }}>Cliente</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: "#1a1a1a", marginBottom: 20 }}>
+                <div
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 700,
+                    color: "#1a1a1a",
+                    marginBottom: 20,
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
+                  }}
+                >
                   {data.customer.name}
                 </div>
                 <div style={{ fontSize: 14, color: "#555", marginBottom: 6, fontWeight: 600 }}>Seus pontos</div>
