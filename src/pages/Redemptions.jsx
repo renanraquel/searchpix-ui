@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { fetchApi, apiUrl, getToken } from "../api"
+import { fetchApi, apiUrl, getToken, getTenant } from "../api"
 
 function maskCPF(v) {
   const n = String(v).replace(/\D/g, "").slice(0, 11)
@@ -42,6 +42,13 @@ export default function Redemptions() {
   const [error, setError] = useState("")
   const [bgUploading, setBgUploading] = useState(false)
   const [bgMessage, setBgMessage] = useState("")
+  const tenant = getTenant()
+
+  const tenantSlug = tenant?.slug || tenant?.Slug || "seu-tenant"
+  const publicUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/resgatar?tenant=${tenantSlug}`
+      : `https://searchpix-ui.onrender.com/resgatar?tenant=${tenantSlug}`
 
   async function search(goToPage = 1) {
     setLoading(true)
@@ -119,7 +126,7 @@ export default function Redemptions() {
           Imagem de fundo da tela pública
         </h3>
         <p style={{ margin: 0, marginBottom: 8, fontSize: 13, color: "#555" }}>
-          Essa imagem aparece na tela externa de consulta de pontos ({window.location.origin}/resgatar?tenant=seu-tenant).
+          Essa imagem aparece na tela externa de consulta de pontos ({publicUrl}).
         </p>
         <input
           type="file"
