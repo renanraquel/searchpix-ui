@@ -63,8 +63,11 @@ export default function Pix() {
   const valorTotalPix = pixList.reduce((acc, p) => acc + Number(p.valor), 0)
 
   return (
-    <div style={{ padding: "0 24px" }}>
-      <h2 style={{ marginBottom: 24 }}>Consultar PIX Recebidos</h2>
+    <div>
+      <h2 style={{ marginBottom: 8, fontSize: 24, fontWeight: 600, color: "#111827" }}>Consultar PIX recebidos</h2>
+      <p style={{ marginBottom: 24, color: "#6b7280", fontSize: 14 }}>
+        Filtre os recebimentos por período para ver detalhes de cada PIX e o valor total no intervalo.
+      </p>
       <div
         style={{
           display: "flex",
@@ -116,7 +119,17 @@ export default function Pix() {
         </div>
       </div>
       {erro && (
-        <p style={{ color: "red", padding: 15, backgroundColor: "#fff1f0", border: "1px solid #ffa39e", borderRadius: 4, marginBottom: 20 }}>
+        <p
+          style={{
+            color: "#b91c1c",
+            padding: 12,
+            backgroundColor: "#fee2e2",
+            border: "1px solid #fecaca",
+            borderRadius: 8,
+            marginBottom: 20,
+            fontSize: 14,
+          }}
+        >
           {erro}
         </p>
       )}

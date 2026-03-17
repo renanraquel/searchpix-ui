@@ -92,8 +92,11 @@ export default function Products() {
   }
 
   return (
-    <div style={{ padding: "0 24px" }}>
-      <h2 style={{ marginBottom: 24 }}>Produtos para resgate</h2>
+    <div>
+      <h2 style={{ marginBottom: 8, fontSize: 24, fontWeight: 600, color: "#111827" }}>Produtos para resgate</h2>
+      <p style={{ color: "#6b7280", marginBottom: 20, fontSize: 14 }}>
+        Configure os itens que poderão ser trocados por pontos. Capriche nas imagens e descrições para estimular o resgate.
+      </p>
       {error && (
         <p style={{ color: "#721c24", backgroundColor: "#f8d7da", padding: 12, borderRadius: 6, marginBottom: 16 }}>
           {error}

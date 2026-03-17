@@ -1,8 +1,31 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom"
 import { setAuth, getTenant } from "../api"
 
-const linkStyle = { color: "#333", textDecoration: "none", fontSize: "1.05rem" }
-const activeStyle = { ...linkStyle, color: "#0052cc", fontWeight: "bold" }
+const baseLinkStyle = {
+  textDecoration: "none",
+  fontSize: "0.95rem",
+  padding: "8px 14px",
+  borderRadius: 999,
+  border: "1px solid transparent",
+  color: "#344054",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 6,
+  fontWeight: 500,
+}
+
+const linkStyle = {
+  ...baseLinkStyle,
+  backgroundColor: "transparent",
+}
+
+const activeStyle = {
+  ...baseLinkStyle,
+  backgroundColor: "#e0edff",
+  borderColor: "#b2ccff",
+  color: "#0052cc",
+}
 
 export default function Layout({ onLogout }) {
   const navigate = useNavigate()
@@ -15,20 +38,38 @@ export default function Layout({ onLogout }) {
   }
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#fff" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "#f3f4f6" }}>
       <header
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "16px 24px",
-          borderBottom: "1px solid #eee",
-          backgroundColor: "#f8f9fa",
-          flexWrap: "wrap",
-          gap: 12,
+          position: "sticky",
+          top: 0,
+          zIndex: 20,
+          backgroundColor: "#ffffffcc",
+          backdropFilter: "blur(10px)",
+          borderBottom: "1px solid #e5e7eb",
         }}
       >
-        <nav style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap", fontSize: "1.05rem" }}>
+        <div
+          style={{
+            maxWidth: 1120,
+            margin: "0 auto",
+            padding: "12px 20px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 12,
+          }}
+        >
+          <nav
+            style={{
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+              flexWrap: "wrap",
+              fontSize: "0.95rem",
+            }}
+          >
           <NavLink to="/pix" style={({ isActive }) => (isActive ? activeStyle : linkStyle)}>
             PIX
           </NavLink>
@@ -48,13 +89,13 @@ export default function Layout({ onLogout }) {
             Resgatar Produto
           </NavLink>
         </nav>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {tenant?.name && (
             <span
               style={{
-                color: "#003366",
-                fontWeight: "bold",
-                fontSize: "1.05rem",
+              color: "#111827",
+              fontWeight: 600,
+              fontSize: "0.95rem",
               }}
             >
               {tenant.name}
@@ -64,21 +105,30 @@ export default function Layout({ onLogout }) {
             type="button"
             onClick={logout}
             style={{
-              padding: "10px 20px",
-              backgroundColor: "#f5f5f5",
-              border: "1px solid #ccc",
-              borderRadius: 6,
-              fontWeight: "bold",
+              padding: "8px 16px",
+              backgroundColor: "#f9fafb",
+              border: "1px solid #e5e7eb",
+              borderRadius: 999,
+              fontWeight: 500,
               cursor: "pointer",
-              fontSize: "1.05rem",
+              fontSize: "0.9rem",
             }}
           >
             Sair
           </button>
         </div>
+        </div>
       </header>
-      <main style={{ padding: "24px 0" }}>
-        <Outlet />
+      <main>
+        <div
+          style={{
+            maxWidth: 1120,
+            margin: "0 auto",
+            padding: "24px 20px 40px",
+          }}
+        >
+          <Outlet />
+        </div>
       </main>
     </div>
   )

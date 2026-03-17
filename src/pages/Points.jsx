@@ -176,12 +176,11 @@ export default function Points() {
   }
 
   return (
-    <div style={{ padding: "0 24px", maxWidth: 560 }}>
-      <h2 style={{ marginBottom: 24 }}>Lançar pontos</h2>
-      <p style={{ color: "#666", marginBottom: 24 }}>
+    <div style={{ maxWidth: 640 }}>
+      <h2 style={{ marginBottom: 8, fontSize: 24, fontWeight: 600, color: "#111827" }}>Lançar pontos</h2>
+      <p style={{ color: "#6b7280", marginBottom: 20, fontSize: 14 }}>
         <strong>Regra de pontuação:</strong> a cada R$ 5,00 em compras você ganha 1 ponto, sempre arredondando para cima.
-        Ex.: R$ 7,00 / 8,00 / 9,00 = 2 pontos.
-        Busque o cliente por <strong>CPF</strong> ou pelo <strong>nome</strong>.
+        Ex.: R$ 7,00 / 8,00 / 9,00 = 2 pontos. Busque o cliente por <strong>CPF</strong> ou pelo <strong>nome</strong> e informe o valor da compra.
       </p>
 
       <div style={{ marginBottom: 24, position: "relative" }}>

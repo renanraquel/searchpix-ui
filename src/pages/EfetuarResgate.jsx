@@ -181,10 +181,10 @@ export default function EfetuarResgate() {
   const balance = customer?.points_balance ?? 0
 
   return (
-    <div style={{ padding: "0 24px", maxWidth: 720 }}>
-      <h2 style={{ marginBottom: 24 }}>Efetuar resgate</h2>
-      <p style={{ color: "#666", marginBottom: 24 }}>
-        Busque o cliente por <strong>CPF</strong> ou <strong>nome</strong>. Depois escolha o item e confirme o resgate no caixa.
+    <div style={{ maxWidth: 760 }}>
+      <h2 style={{ marginBottom: 8, fontSize: 24, fontWeight: 600, color: "#111827" }}>Efetuar resgate</h2>
+      <p style={{ color: "#6b7280", marginBottom: 20, fontSize: 14 }}>
+        Busque o cliente por <strong>CPF</strong> ou <strong>nome</strong>, confira o saldo de pontos e escolha o item para resgate no caixa.
       </p>
 
       <div style={{ marginBottom: 24, position: "relative" }}>

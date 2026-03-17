@@ -103,8 +103,8 @@ export default function Redemptions() {
   const totalPages = data?.total_pages ?? 1
 
   return (
-    <div style={{ padding: "0 24px" }}>
-      <h2 style={{ marginBottom: 24 }}>Consulta de resgates</h2>
+    <div>
+      <h2 style={{ marginBottom: 8, fontSize: 24, fontWeight: 600, color: "#111827" }}>Consulta de resgates</h2>
 
       <section
         style={{
@@ -115,7 +115,9 @@ export default function Redemptions() {
           backgroundColor: "#f8f9ff",
         }}
       >
-        <h3 style={{ margin: 0, marginBottom: 8, fontSize: 16 }}>Imagem de fundo da tela pública</h3>
+        <h3 style={{ margin: 0, marginBottom: 8, fontSize: 16, fontWeight: 600, color: "#111827" }}>
+          Imagem de fundo da tela pública
+        </h3>
         <p style={{ margin: 0, marginBottom: 8, fontSize: 13, color: "#555" }}>
           Essa imagem aparece na tela externa de consulta de pontos ({window.location.origin}/resgatar?tenant=seu-tenant).
         </p>
