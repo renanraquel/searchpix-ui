@@ -1,0 +1,25 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect x="0" y="0" width="128" height="128" rx="24" fill="#0A2540"></rect>
+
+  <!-- Gradient -->
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00C6FF"></stop>
+      <stop offset="100%" stop-color="#0072FF"></stop>
+    </linearGradient>
+  </defs>
+
+  <!-- RR Letters -->
+  <text x="50%" y="55%" text-anchor="middle" fill="url(#grad)" font-size="56" font-family="Arial, Helvetica, sans-serif" font-weight="bold" dy=".3em">
+    RR
+  </text>
+
+  <!-- Small accent line -->
+  <rect x="32" y="88" width="64" height="6" rx="3" fill="#00C6FF" opacity="0.8"></rect>
+
+  <!-- Subtitle (optional, small) -->
+  <text x="50%" y="110" text-anchor="middle" fill="#A0AEC0" font-size="10" font-family="Arial, Helvetica, sans-serif">
+    SOLUTIONS
+  </text>
+</svg>

@@ -30,8 +30,6 @@ function formatDate(d) {
   }
 }
 
-const PAGE_SIZE = 8
-
 export default function Redemptions() {
   const [inicio, setInicio] = useState("")
   const [fim, setFim] = useState("")
@@ -111,151 +109,117 @@ export default function Redemptions() {
 
   return (
     <div>
-      <h2 style={{ marginBottom: 8, fontSize: 24, fontWeight: 600, color: "#111827" }}>Consulta de resgates</h2>
+      <div className="page-header">
+        <h3 className="page-title">Consulta de resgates</h3>
+      </div>
 
-      <section
-        style={{
-          marginBottom: 24,
-          padding: 16,
-          borderRadius: 8,
-          border: "1px solid #e0e0e0",
-          backgroundColor: "#f8f9ff",
-        }}
-      >
-        <h3 style={{ margin: 0, marginBottom: 8, fontSize: 16, fontWeight: 600, color: "#111827" }}>
-          Imagem de fundo da tela pública
-        </h3>
-        <p style={{ margin: 0, marginBottom: 8, fontSize: 13, color: "#555" }}>
-          Essa imagem aparece na tela externa de consulta de pontos ({publicUrl}).
-        </p>
-        <input
-          type="file"
-          accept="image/*"
-          disabled={bgUploading}
-          onChange={handleBackgroundChange}
-          style={{ marginTop: 4 }}
-        />
-        {bgMessage && (
-          <p style={{ marginTop: 8, fontSize: 13, color: bgMessage.includes("sucesso") ? "#155724" : "#721c24" }}>
-            {bgMessage}
+      <div className="card mb-4 border-primary">
+        <div className="card-body">
+          <h5 className="card-title">Imagem de fundo da tela pública</h5>
+          <p className="card-text text-muted small mb-2">
+            Essa imagem aparece na tela externa de consulta de pontos:{" "}
+            <code className="text-break">{publicUrl}</code>
           </p>
-        )}
-      </section>
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "flex-end",
-          gap: "20px 24px",
-          marginBottom: 24,
-        }}
-      >
-        <div style={{ minWidth: 140 }}>
-          <label style={{ display: "block", marginBottom: 6, fontWeight: 500 }}>Data início</label>
-          <input
-            type="date"
-            value={inicio}
-            onChange={(e) => setInicio(e.target.value)}
-            style={{ width: "100%", minWidth: 140, padding: "10px 12px", borderRadius: 8, border: "1px solid #ccc", boxSizing: "border-box" }}
-          />
+          <input type="file" accept="image/*" disabled={bgUploading} className="form-control-file" onChange={handleBackgroundChange} />
+          {bgMessage && (
+            <p className={`small mt-2 mb-0 ${bgMessage.includes("sucesso") ? "text-success" : "text-danger"}`}>{bgMessage}</p>
+          )}
         </div>
-        <div style={{ minWidth: 140 }}>
-          <label style={{ display: "block", marginBottom: 6, fontWeight: 500 }}>Data fim</label>
-          <input
-            type="date"
-            value={fim}
-            onChange={(e) => setFim(e.target.value)}
-            style={{ width: "100%", minWidth: 140, padding: "10px 12px", borderRadius: 8, border: "1px solid #ccc", boxSizing: "border-box" }}
-          />
-        </div>
-        <div style={{ minWidth: 200 }}>
-          <label style={{ display: "block", marginBottom: 6, fontWeight: 500 }}>Nome ou CPF</label>
-          <input
-            type="text"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Filtrar por nome ou CPF"
-            style={{ width: "100%", minWidth: 200, padding: "10px 12px", borderRadius: 8, border: "1px solid #ccc", boxSizing: "border-box" }}
-          />
-        </div>
-        <div style={{ paddingBottom: 2 }}>
-          <label style={{ display: "block", marginBottom: 6, opacity: 0 }}>Ação</label>
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              padding: "10px 24px",
-              backgroundColor: "#0052cc",
-              color: "white",
-              border: "none",
-              borderRadius: 8,
-              fontWeight: "bold",
-              cursor: loading ? "not-allowed" : "pointer",
-            }}
-          >
-            {loading ? "Buscando..." : "Pesquisar"}
-          </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="mb-4">
+        <div className="row align-items-end">
+          <div className="col-md-3 col-sm-6 mb-3">
+            <div className="form-group mb-0">
+              <label htmlFor="red-inicio">Data início</label>
+              <input
+                id="red-inicio"
+                type="date"
+                className="form-control"
+                value={inicio}
+                onChange={(e) => setInicio(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="col-md-3 col-sm-6 mb-3">
+            <div className="form-group mb-0">
+              <label htmlFor="red-fim">Data fim</label>
+              <input id="red-fim" type="date" className="form-control" value={fim} onChange={(e) => setFim(e.target.value)} />
+            </div>
+          </div>
+          <div className="col-md-4 col-sm-6 mb-3">
+            <div className="form-group mb-0">
+              <label htmlFor="red-q">Nome ou CPF</label>
+              <input
+                id="red-q"
+                type="text"
+                className="form-control"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Filtrar por nome ou CPF"
+              />
+            </div>
+          </div>
+          <div className="col-md-auto mb-3">
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? "Buscando..." : "Pesquisar"}
+            </button>
+          </div>
         </div>
       </form>
 
       {error && (
-        <p style={{ color: "#721c24", backgroundColor: "#f8d7da", padding: 12, borderRadius: 8, marginBottom: 16 }}>
+        <div className="cp-alert cp-alert-danger" role="alert">
           {error}
-        </p>
+        </div>
       )}
 
       {data && (
         <>
-          <p style={{ color: "#666", marginBottom: 12 }}>
+          <p className="text-muted mb-3">
             {total} resgate(s) encontrado(s). Ordenação: data mais antiga primeiro.
           </p>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #eee" }}>
+          <div className="table-responsive">
+            <table className="table table-striped table-hover">
               <thead>
-                <tr style={{ backgroundColor: "#f8f9fa" }}>
-                  <th style={{ textAlign: "left", padding: 12 }}>Data</th>
-                  <th style={{ textAlign: "left", padding: 12 }}>Nome</th>
-                  <th style={{ textAlign: "left", padding: 12 }}>CPF</th>
-                  <th style={{ textAlign: "left", padding: 12 }}>Telefone</th>
-                  <th style={{ textAlign: "right", padding: 12 }}>Pontos resgatados</th>
+                <tr>
+                  <th>Data</th>
+                  <th>Nome</th>
+                  <th>CPF</th>
+                  <th>Telefone</th>
+                  <th className="text-right">Pontos resgatados</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((row) => (
-                  <tr key={row.id} style={{ borderBottom: "1px solid #eee" }}>
-                    <td style={{ padding: 12 }}>{formatDate(row.created_at)}</td>
-                    <td style={{ padding: 12 }}>{row.customer_name}</td>
-                    <td style={{ padding: 12 }}>{maskCPF(row.cpf)}</td>
-                    <td style={{ padding: 12 }}>{maskPhone(row.phone)}</td>
-                    <td style={{ padding: 12, textAlign: "right", fontWeight: 600 }}>{row.points_used}</td>
+                  <tr key={row.id}>
+                    <td>{formatDate(row.created_at)}</td>
+                    <td>{row.customer_name}</td>
+                    <td>{maskCPF(row.cpf)}</td>
+                    <td>{maskPhone(row.phone)}</td>
+                    <td className="text-right font-weight-bold">{row.points_used}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
           {items.length === 0 && (
-            <p style={{ padding: 24, color: "#666", textAlign: "center" }}>Nenhum resgate encontrado com os filtros informados.</p>
+            <p className="text-center text-muted p-4">Nenhum resgate encontrado com os filtros informados.</p>
           )}
 
           {totalPages > 1 && (
-            <div style={{ marginTop: 24, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-              <span style={{ color: "#666" }}>
+            <div className="d-flex align-items-center flex-wrap mt-3">
+              <span className="text-muted mr-3 mb-2 mb-sm-0">
                 Página {page} de {totalPages}
               </span>
-              <button
-                type="button"
-                onClick={() => search(page - 1)}
-                disabled={page <= 1}
-                style={{ padding: "8px 16px", cursor: page <= 1 ? "not-allowed" : "pointer" }}
-              >
+              <button type="button" className="btn btn-outline-secondary btn-sm mr-2" onClick={() => search(page - 1)} disabled={page <= 1}>
                 Anterior
               </button>
               <button
                 type="button"
+                className="btn btn-outline-secondary btn-sm"
                 onClick={() => search(page + 1)}
                 disabled={page >= totalPages}
-                style={{ padding: "8px 16px", cursor: page >= totalPages ? "not-allowed" : "pointer" }}
               >
                 Próxima
               </button>
@@ -264,9 +228,7 @@ export default function Redemptions() {
         </>
       )}
 
-      {!data && !loading && (
-        <p style={{ color: "#666" }}>Use os filtros acima e clique em Pesquisar para listar os resgates.</p>
-      )}
+      {!data && !loading && <p className="text-muted">Use os filtros acima e clique em Pesquisar para listar os resgates.</p>}
     </div>
   )
 }

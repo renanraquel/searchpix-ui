@@ -42,9 +42,7 @@ export default function Products() {
       formData.append("points_required", String(points))
       if (imageFile) formData.append("image", imageFile)
       const token = getToken()
-      const url = editing
-        ? apiUrl(`/api/products/update?id=${editing.id}`)
-        : apiUrl("/api/products/create")
+      const url = editing ? apiUrl(`/api/products/update?id=${editing.id}`) : apiUrl("/api/products/create")
       const res = await fetch(url, {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -93,148 +91,132 @@ export default function Products() {
 
   return (
     <div>
-      <h2 style={{ marginBottom: 8, fontSize: 24, fontWeight: 600, color: "#111827" }}>Produtos para resgate</h2>
-      <p style={{ color: "#6b7280", marginBottom: 20, fontSize: 14 }}>
+      <div className="page-header">
+        <h3 className="page-title">Produtos para resgate</h3>
+      </div>
+      <p className="text-muted mb-4">
         Configure os itens que poderão ser trocados por pontos. Capriche nas imagens e descrições para estimular o resgate.
       </p>
+
       {error && (
-        <p style={{ color: "#721c24", backgroundColor: "#f8d7da", padding: 12, borderRadius: 6, marginBottom: 16 }}>
+        <div className="cp-alert cp-alert-danger" role="alert">
           {error}
-        </p>
+        </div>
       )}
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "flex-end",
-          gap: "20px 24px",
-          marginBottom: 24,
-        }}
-      >
-        <div style={{ minWidth: 200 }}>
-          <label style={{ display: "block", marginBottom: 6, fontWeight: 500 }}>Cadastrar Imagem</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            style={{ width: "100%", minWidth: 200, padding: "8px 0", boxSizing: "border-box" }}
-          />
-          {(imageFile || (editing?.image_url)) && (
-            <p style={{ fontSize: 13, color: "#666", marginTop: 6 }}>
-              {imageFile ? "Nova imagem selecionada. Salve para gravar no banco." : "Imagem no banco. Selecione outra para substituir."}
-            </p>
-          )}
+
+      <div className="card mb-4">
+        <div className="card-body">
+          <h5 className="card-title mb-3">{editing ? "Editar produto" : "Novo produto"}</h5>
+          <form onSubmit={handleSubmit}>
+            <div className="row align-items-end">
+              <div className="col-md-4 col-sm-6 mb-3">
+                <div className="form-group mb-0">
+                  <label htmlFor="prod-img">Imagem</label>
+                  <input id="prod-img" type="file" accept="image/*" className="form-control-file" onChange={handleImageChange} />
+                  {(imageFile || editing?.image_url) && (
+                    <small className="form-text text-muted">
+                      {imageFile ? "Nova imagem selecionada. Salve para gravar." : "Imagem no banco. Selecione outra para substituir."}
+                    </small>
+                  )}
+                </div>
+              </div>
+              <div className="col-md-4 col-sm-6 mb-3">
+                <div className="form-group mb-0">
+                  <label htmlFor="prod-desc">Descrição *</label>
+                  <input
+                    id="prod-desc"
+                    type="text"
+                    className="form-control"
+                    value={form.description}
+                    onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                    required
+                    placeholder="Nome do produto"
+                  />
+                </div>
+              </div>
+              <div className="col-md-2 col-sm-6 mb-3">
+                <div className="form-group mb-0">
+                  <label htmlFor="prod-pts">Pontos *</label>
+                  <input
+                    id="prod-pts"
+                    type="number"
+                    min={1}
+                    className="form-control"
+                    value={form.points_required}
+                    onChange={(e) => setForm((f) => ({ ...f, points_required: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="col-md-auto mb-3">
+                <button type="submit" className={`btn ${editing ? "btn-success" : "btn-primary"} mr-2`}>
+                  {editing ? "Salvar" : "Cadastrar"}
+                </button>
+                {editing && (
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => {
+                      setEditing(null)
+                      setImageFile(null)
+                      setForm({ description: "", points_required: "" })
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                )}
+              </div>
+            </div>
+          </form>
         </div>
-        <div style={{ minWidth: 200 }}>
-          <label style={{ display: "block", marginBottom: 6, fontWeight: 500 }}>Descrição *</label>
-          <input
-            type="text"
-            value={form.description}
-            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            required
-            placeholder="Nome do produto"
-            style={{ width: "100%", minWidth: 200, padding: "10px 12px", borderRadius: 6, border: "1px solid #ccc", boxSizing: "border-box" }}
-          />
-        </div>
-        <div style={{ minWidth: 100 }}>
-          <label style={{ display: "block", marginBottom: 6, fontWeight: 500 }}>Pontos *</label>
-          <input
-            type="number"
-            min={1}
-            value={form.points_required}
-            onChange={(e) => setForm((f) => ({ ...f, points_required: e.target.value }))}
-            required
-            style={{ width: "100%", minWidth: 80, padding: "10px 12px", borderRadius: 6, border: "1px solid #ccc", boxSizing: "border-box" }}
-          />
-        </div>
-        <div style={{ paddingBottom: 2 }}>
-          <label style={{ display: "block", marginBottom: 6, opacity: 0 }}>Ação</label>
-          <button
-            type="submit"
-            style={{
-              padding: "10px 20px",
-              backgroundColor: editing ? "#28a745" : "#0052cc",
-              color: "white",
-              border: "none",
-              borderRadius: 6,
-              fontWeight: "bold",
-              cursor: "pointer",
-              marginRight: editing ? 8 : 0,
-            }}
-          >
-            {editing ? "Salvar" : "Cadastrar"}
-          </button>
-          {editing && (
-            <button
-              type="button"
-              onClick={() => { setEditing(null); setImageFile(null); setForm({ description: "", points_required: "" }); }}
-              style={{ padding: "10px 16px", border: "1px solid #ccc", borderRadius: 6, cursor: "pointer" }}
-            >
-              Cancelar
-            </button>
-          )}
-        </div>
-      </form>
+      </div>
+
       {loading ? (
-        <p>Carregando...</p>
+        <p className="text-muted">Carregando...</p>
       ) : (
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #eee" }}>
-            <colgroup>
-              <col style={{ width: 90 }} />
-              <col />
-              <col style={{ width: 90 }} />
-              <col style={{ width: 160 }} />
-            </colgroup>
-            <thead>
-              <tr style={{ backgroundColor: "#f8f9fa" }}>
-                <th style={{ textAlign: "left", padding: 12 }}>Imagem</th>
-                <th style={{ textAlign: "left", padding: 12 }}>Descrição</th>
-                <th style={{ textAlign: "right", padding: 12 }}>Pontos</th>
-                <th style={{ padding: 12 }}>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(list || []).map((p) => (
-                <tr key={p.id} style={{ borderBottom: "1px solid #eee" }}>
-                  <td style={{ padding: 12 }}>
-                    {p.image_url ? (
-                      <img
-                        src={p.image_url.startsWith("http") ? p.image_url : apiUrl(p.image_url)}
-                        alt=""
-                        style={{ maxWidth: 60, maxHeight: 60, objectFit: "cover" }}
-                      />
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                  <td style={{ padding: 12 }}>{p.description}</td>
-                  <td style={{ padding: 12, textAlign: "right" }}>{p.points_required}</td>
-                  <td style={{ padding: 12 }}>
-                    <div style={{ display: "flex", flexWrap: "nowrap", gap: 8, alignItems: "center" }}>
-                      <button
-                        type="button"
-                        onClick={() => startEdit(p)}
-                        style={{ padding: "6px 12px", cursor: "pointer", whiteSpace: "nowrap" }}
-                      >
+        <>
+          <div className="table-responsive">
+            <table className="table table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>Imagem</th>
+                  <th>Descrição</th>
+                  <th className="text-right">Pontos</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(list || []).map((p) => (
+                  <tr key={p.id}>
+                    <td>
+                      {p.image_url ? (
+                        <img
+                          src={p.image_url.startsWith("http") ? p.image_url : apiUrl(p.image_url)}
+                          alt=""
+                          className="rounded"
+                          style={{ maxWidth: 60, maxHeight: 60, objectFit: "cover" }}
+                        />
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td>{p.description}</td>
+                    <td className="text-right">{p.points_required}</td>
+                    <td>
+                      <button type="button" className="btn btn-sm btn-outline-primary mr-2" onClick={() => startEdit(p)}>
                         Editar
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(p.id)}
-                        style={{ padding: "6px 12px", color: "#721c24", cursor: "pointer", whiteSpace: "nowrap" }}
-                      >
+                      <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(p.id)}>
                         Excluir
                       </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {list.length === 0 && <p style={{ padding: 24, color: "#666" }}>Nenhum produto cadastrado.</p>}
-        </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {list.length === 0 && <p className="text-muted p-3">Nenhum produto cadastrado.</p>}
+        </>
       )}
     </div>
   )

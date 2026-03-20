@@ -39,100 +39,67 @@ export default function LoginLoyalty({ onLogin }) {
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#f0f2f5",
-        padding: 16,
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 400,
-          padding: 40,
-          borderRadius: 12,
-          backgroundColor: "#fff",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-        }}
-      >
-        <h2 style={{ marginBottom: 24, textAlign: "center", color: "#333" }}>
-          Acesso - Fidelização
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", marginBottom: 8, fontWeight: 600 }}>
-              Usuário
-            </label>
-            <input
-              type="text"
-              value={user}
-              onChange={(e) => setUser(e.target.value)}
-              required
-              style={{
-                width: "100%",
-                height: 44,
-                padding: "8px 12px",
-                borderRadius: 6,
-                border: "1px solid #ccc",
-                boxSizing: "border-box",
-              }}
-            />
+    <div className="container-scroller">
+      <div className="container-fluid page-body-wrapper full-page-wrapper">
+        <div className="content-wrapper d-flex align-items-center auth">
+          <div className="row flex-grow w-100 mx-0">
+            <div className="col-lg-4 mx-auto">
+              <div className="auth-form-light text-left p-5">
+                <div className="brand-logo mb-4">
+                  <span className="app-brand-text app-brand-text--login">RR Solutions</span>
+                </div>
+                <h4>Acesso — Fidelização</h4>
+                <h6 className="font-weight-light">Entre com seu usuário e senha.</h6>
+                <form className="pt-3" onSubmit={handleSubmit}>
+                  <div className="form-group">
+                    <label htmlFor="login-user" className="sr-only">
+                      Usuário
+                    </label>
+                    <input
+                      id="login-user"
+                      type="text"
+                      className="form-control form-control-lg"
+                      placeholder="Usuário"
+                      value={user}
+                      onChange={(e) => setUser(e.target.value)}
+                      autoComplete="username"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="login-pass" className="sr-only">
+                      Senha
+                    </label>
+                    <input
+                      id="login-pass"
+                      type="password"
+                      className="form-control form-control-lg"
+                      placeholder="Senha"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      autoComplete="current-password"
+                      required
+                    />
+                  </div>
+                  {error && (
+                    <div className="cp-alert cp-alert-danger" role="alert">
+                      {error}
+                    </div>
+                  )}
+                  <div className="mt-3">
+                    <button
+                      type="submit"
+                      className="btn btn-block btn-primary btn-lg font-weight-medium auth-form-btn"
+                      disabled={loading}
+                    >
+                      {loading ? "Entrando..." : "Entrar"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
-          <div style={{ marginBottom: 24 }}>
-            <label style={{ display: "block", marginBottom: 8, fontWeight: 600 }}>
-              Senha
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={{
-                width: "100%",
-                height: 44,
-                padding: "8px 12px",
-                borderRadius: 6,
-                border: "1px solid #ccc",
-                boxSizing: "border-box",
-              }}
-            />
-          </div>
-          {error && (
-            <p
-              style={{
-                color: "#721c24",
-                backgroundColor: "#f8d7da",
-                padding: 12,
-                borderRadius: 6,
-                marginBottom: 16,
-                fontSize: 14,
-              }}
-            >
-              {error}
-            </p>
-          )}
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              height: 44,
-              backgroundColor: "#0052cc",
-              color: "white",
-              border: "none",
-              borderRadius: 6,
-              fontWeight: "bold",
-              cursor: loading ? "not-allowed" : "pointer",
-              fontSize: 16,
-            }}
-          >
-            {loading ? "Entrando..." : "Entrar"}
-          </button>
-        </form>
+        </div>
       </div>
     </div>
   )

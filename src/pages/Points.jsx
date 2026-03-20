@@ -14,14 +14,12 @@ function maskPhone(v) {
   return n.replace(/(\d{2})(\d{5})(\d{0,4})/, (_, a, b, c) => `(${a}) ${b}${c ? `-${c}` : ""}`)
 }
 
-// Filtra clientes por nome: cada palavra do termo deve aparecer no nome
 function filterCustomersByName(customers, term) {
   const words = term.trim().toLowerCase().split(/\s+/).filter(Boolean)
   if (words.length === 0) return []
   return customers.filter((c) => words.every((w) => c.name.toLowerCase().includes(w)))
 }
 
-// Máscara R$: apenas dígitos, últimos 2 = centavos
 function maskCurrencyBR(value) {
   const digits = value.replace(/\D/g, "").slice(0, 12)
   if (digits.length === 0) return ""
@@ -50,7 +48,6 @@ export default function Points() {
   const inputRef = useRef(null)
   const dropdownRef = useRef(null)
 
-  const isOnlyDigits = /^\d*$/.test(searchInput.replace(/\D/g, ""))
   const rawCpf = searchInput.replace(/\D/g, "")
   const hasLetters = /[a-zA-ZÀ-ÿ]/.test(searchInput)
   const suggestions = hasLetters ? filterCustomersByName(customersList, searchInput) : []
@@ -175,179 +172,109 @@ export default function Points() {
     }
   }
 
-  return (
-    <div style={{ maxWidth: 640 }}>
-      <h2 style={{ marginBottom: 8, fontSize: 24, fontWeight: 600, color: "#111827" }}>Lançar pontos</h2>
-      <p style={{ color: "#6b7280", marginBottom: 20, fontSize: 14 }}>
-        <strong>Regra de pontuação:</strong> a cada R$ 5,00 em compras você ganha 1 ponto, sempre arredondando para cima.
-        Ex.: R$ 7,00 / 8,00 / 9,00 = 2 pontos. Busque o cliente por <strong>CPF</strong> ou pelo <strong>nome</strong> e informe o valor da compra.
-      </p>
+  const msgClass =
+    message.type === "error" ? "cp-alert-danger" : message.type === "warning" ? "cp-alert-warning" : "cp-alert-success"
 
-      <div style={{ marginBottom: 24, position: "relative" }}>
-        <label style={{ display: "block", marginBottom: 8, fontWeight: 500 }}>Cliente (CPF ou nome)</label>
-        <div style={{ display: "flex", gap: 12, alignItems: "stretch", flexWrap: "wrap" }}>
-          <div style={{ flex: 1, minWidth: 200, position: "relative" }}>
-            <input
-              ref={inputRef}
-              type="text"
-              value={searchInput}
-              onChange={handleSearchChange}
-              onFocus={() => hasLetters && suggestions.length > 0 && setShowSuggestions(true)}
-              placeholder="Digite o CPF ou o nome do cliente"
-              disabled={!!customer}
-              style={{
-                width: "100%",
-                padding: "12px 14px",
-                borderRadius: 8,
-                border: "1px solid #ccc",
-                fontSize: 16,
-                boxSizing: "border-box",
-              }}
-            />
-            {showSuggestions && suggestions.length > 0 && (
-              <ul
-                ref={dropdownRef}
-                style={{
-                  listStyle: "none",
-                  margin: 0,
-                  padding: 0,
-                  position: "absolute",
-                  top: "100%",
-                  left: 0,
-                  right: 0,
-                  marginTop: 4,
-                  backgroundColor: "#fff",
-                  border: "1px solid #ccc",
-                  borderRadius: 8,
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                  maxHeight: 260,
-                  overflowY: "auto",
-                  zIndex: 10,
-                }}
-              >
-                {suggestions.slice(0, 10).map((c) => (
-                  <li
-                    key={c.id}
-                    onClick={() => selectCustomer(c)}
-                    style={{
-                      padding: "12px 14px",
-                      cursor: "pointer",
-                      borderBottom: "1px solid #eee",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = "#f0f4ff"
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = "transparent"
-                    }}
-                  >
-                    <strong>{c.name}</strong>
-                    <span style={{ color: "#666", fontSize: 14, display: "block", marginTop: 2 }}>
-                      {maskCPF(c.cpf)} · {maskPhone(c.phone)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+  return (
+    <div className="row">
+      <div className="col-lg-8">
+        <div className="page-header">
+          <h3 className="page-title">Lançar pontos</h3>
+        </div>
+        <p className="text-muted mb-4">
+          <strong>Regra de pontuação:</strong> a cada R$ 5,00 em compras você ganha 1 ponto, sempre arredondando para cima.
+          Ex.: R$ 7,00 / 8,00 / 9,00 = 2 pontos. Busque o cliente por <strong>CPF</strong> ou pelo <strong>nome</strong> e informe o valor da compra.
+        </p>
+
+        <div className="form-group position-relative mb-4">
+          <label htmlFor="points-client">Cliente (CPF ou nome)</label>
+          <div className="d-flex flex-wrap align-items-stretch">
+            <div className="flex-grow-1 position-relative mr-2 mb-2 mb-sm-0" style={{ minWidth: 200 }}>
+              <input
+                ref={inputRef}
+                id="points-client"
+                type="text"
+                className="form-control"
+                value={searchInput}
+                onChange={handleSearchChange}
+                onFocus={() => hasLetters && suggestions.length > 0 && setShowSuggestions(true)}
+                placeholder="Digite o CPF ou o nome do cliente"
+                disabled={!!customer}
+              />
+              {showSuggestions && suggestions.length > 0 && (
+                <ul
+                  ref={dropdownRef}
+                  className="list-group position-absolute w-100 shadow-sm mt-1"
+                  style={{ zIndex: 20, maxHeight: 260, overflowY: "auto" }}
+                >
+                  {suggestions.slice(0, 10).map((c) => (
+                    <li
+                      key={c.id}
+                      className="list-group-item list-group-item-action py-2"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => selectCustomer(c)}
+                    >
+                      <strong>{c.name}</strong>
+                      <small className="d-block text-muted">
+                        {maskCPF(c.cpf)} · {maskPhone(c.phone)}
+                      </small>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            {!customer && rawCpf.length === 11 && (
+              <button type="button" className="btn btn-primary mr-2" onClick={verifyCpf} disabled={checking}>
+                {checking ? "Verificando..." : "Verificar CPF"}
+              </button>
+            )}
+            {customer && (
+              <button type="button" className="btn btn-outline-secondary" onClick={clearCustomer}>
+                Trocar cliente
+              </button>
             )}
           </div>
-          {!customer && rawCpf.length === 11 && (
-            <button
-              type="button"
-              onClick={verifyCpf}
-              disabled={checking}
-              style={{
-                padding: "12px 20px",
-                backgroundColor: "#0052cc",
-                color: "white",
-                border: "none",
-                borderRadius: 8,
-                fontWeight: "bold",
-                cursor: checking ? "not-allowed" : "pointer",
-              }}
-            >
-              {checking ? "Verificando..." : "Verificar CPF"}
-            </button>
-          )}
-          {customer && (
-            <button
-              type="button"
-              onClick={clearCustomer}
-              style={{
-                padding: "12px 16px",
-                border: "1px solid #ccc",
-                borderRadius: 8,
-                backgroundColor: "#f5f5f5",
-                cursor: "pointer",
-                fontWeight: 500,
-              }}
-            >
-              Trocar cliente
-            </button>
+          {hasLetters && searchInput.trim().length > 0 && !customer && (
+            <small className="form-text text-muted">
+              {suggestions.length === 0
+                ? "Nenhum cliente encontrado com esse nome."
+                : `${suggestions.length} cliente(s) encontrado(s). Clique para selecionar.`}
+            </small>
           )}
         </div>
-        {hasLetters && searchInput.trim().length > 0 && !customer && (
-          <p style={{ fontSize: 13, color: "#666", marginTop: 6 }}>
-            {suggestions.length === 0
-              ? "Nenhum cliente encontrado com esse nome."
-              : `${suggestions.length} cliente(s) encontrado(s). Clique para selecionar.`}
-          </p>
+
+        {message.text && (
+          <div className={`cp-alert ${msgClass}`} role="alert">
+            {message.text}
+          </div>
+        )}
+
+        {customer && (
+          <div className="card">
+            <div className="card-body">
+              <h5 className="card-title mb-3">Valor da compra</h5>
+              <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                  <label htmlFor="points-value">Valor (R$)</label>
+                  <input
+                    id="points-value"
+                    type="text"
+                    inputMode="decimal"
+                    className="form-control form-control-lg"
+                    style={{ maxWidth: 280 }}
+                    value={valueReais}
+                    onChange={(e) => setValueReais(maskCurrencyBR(e.target.value))}
+                    placeholder="R$ 0,00"
+                  />
+                </div>
+                <button type="submit" className="btn btn-success" disabled={submitting}>
+                  {submitting ? "Lançando..." : "Lançar pontos"}
+                </button>
+              </form>
+            </div>
+          </div>
         )}
       </div>
-
-      {message.text && (
-        <div
-          style={{
-            padding: 12,
-            borderRadius: 8,
-            marginBottom: 24,
-            backgroundColor:
-              message.type === "error" ? "#f8d7da" : message.type === "warning" ? "#fff3cd" : "#d4edda",
-            color: message.type === "error" ? "#721c24" : message.type === "warning" ? "#856404" : "#155724",
-          }}
-        >
-          {message.text}
-        </div>
-      )}
-
-      {customer && (
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 20 }}>
-            <label style={{ display: "block", marginBottom: 8, fontWeight: 500 }}>Valor da compra (R$)</label>
-            <input
-              type="text"
-              inputMode="decimal"
-              value={valueReais}
-              onChange={(e) => setValueReais(maskCurrencyBR(e.target.value))}
-              placeholder="R$ 0,00"
-              style={{
-                width: "100%",
-                maxWidth: 220,
-                padding: "12px 14px",
-                borderRadius: 8,
-                border: "1px solid #ccc",
-                fontSize: 18,
-                boxSizing: "border-box",
-              }}
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={submitting}
-            style={{
-              padding: "12px 24px",
-              backgroundColor: "#28a745",
-              color: "white",
-              border: "none",
-              borderRadius: 8,
-              fontWeight: "bold",
-              cursor: submitting ? "not-allowed" : "pointer",
-              fontSize: 16,
-            }}
-          >
-            {submitting ? "Lançando..." : "Lançar pontos"}
-          </button>
-        </form>
-      )}
     </div>
   )
 }

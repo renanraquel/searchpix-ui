@@ -1,30 +1,21 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom"
 import { setAuth, getTenant } from "../api"
 
-const baseLinkStyle = {
-  textDecoration: "none",
-  fontSize: "0.95rem",
-  padding: "8px 14px",
-  borderRadius: 999,
-  border: "1px solid transparent",
-  color: "#344054",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 6,
-  fontWeight: 500,
-}
-
-const linkStyle = {
-  ...baseLinkStyle,
-  backgroundColor: "transparent",
-}
-
-const activeStyle = {
-  ...baseLinkStyle,
-  backgroundColor: "#e0edff",
-  borderColor: "#b2ccff",
-  color: "#0052cc",
+function SidebarLink({ to, end, icon, children }) {
+  return (
+    <li className="nav-item">
+      <NavLink
+        to={to}
+        end={end}
+        className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
+      >
+        <span className="icon-bg">
+          <i className={`mdi ${icon} menu-icon`} />
+        </span>
+        <span className="menu-title">{children}</span>
+      </NavLink>
+    </li>
+  )
 }
 
 export default function Layout({ onLogout }) {
@@ -38,98 +29,64 @@ export default function Layout({ onLogout }) {
   }
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#f3f4f6" }}>
-      <header
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 20,
-          backgroundColor: "#ffffffcc",
-          backdropFilter: "blur(10px)",
-          borderBottom: "1px solid #e5e7eb",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1120,
-            margin: "0 auto",
-            padding: "12px 20px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 12,
-          }}
-        >
-          <nav
-            style={{
-              display: "flex",
-              gap: 8,
-              alignItems: "center",
-              flexWrap: "wrap",
-              fontSize: "0.95rem",
-            }}
+    <div className="container-scroller">
+      <nav className="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+        <div className="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+          {/* Um único link: brand-logo + brand-logo-mini com d-flex quebravam o display:none do tema */}
+          <NavLink
+            className="navbar-brand app-brand-text-link d-flex align-items-center justify-content-center w-100"
+            to="/pix"
           >
-          <NavLink to="/pix" style={({ isActive }) => (isActive ? activeStyle : linkStyle)}>
-            PIX
+            <span className="app-brand-text">RR Solutions</span>
           </NavLink>
-          <NavLink to="/produtos" style={({ isActive }) => (isActive ? activeStyle : linkStyle)}>
-            Cadastro de Produtos
-          </NavLink>
-          <NavLink to="/clientes" style={({ isActive }) => (isActive ? activeStyle : linkStyle)}>
-            Cadastro de Clientes
-          </NavLink>
-          <NavLink to="/pontos" style={({ isActive }) => (isActive ? activeStyle : linkStyle)}>
-            Lançar pontos
-          </NavLink>
-          <NavLink to="/resgates" end style={({ isActive }) => (isActive ? activeStyle : linkStyle)}>
-            Pesquisa de Resgates
-          </NavLink>
-          <NavLink to="/resgates/efetuar" style={({ isActive }) => (isActive ? activeStyle : linkStyle)}>
-            Resgatar Produto
-          </NavLink>
+        </div>
+        <div className="navbar-menu-wrapper d-flex align-items-stretch flex-grow-1">
+          <ul className="navbar-nav navbar-nav-right ml-auto align-items-center">
+            {tenant?.name && (
+              <li className="nav-item mr-3 d-none d-md-block">
+                <span className="text-dark font-weight-bold">{tenant.name}</span>
+              </li>
+            )}
+            <li className="nav-item">
+              <button type="button" className="btn btn-primary btn-sm" onClick={logout}>
+                Sair
+              </button>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <div className="container-fluid page-body-wrapper">
+        <nav className="sidebar sidebar-offcanvas" id="sidebar">
+          <ul className="nav">
+            <li className="nav-item nav-category">Fidelização</li>
+            <SidebarLink to="/pix" icon="mdi-cash-multiple">
+              PIX
+            </SidebarLink>
+            <SidebarLink to="/produtos" icon="mdi-package-variant">
+              Produtos
+            </SidebarLink>
+            <SidebarLink to="/clientes" icon="mdi-account-multiple">
+              Clientes
+            </SidebarLink>
+            <SidebarLink to="/pontos" icon="mdi-star-circle">
+              Lançar pontos
+            </SidebarLink>
+            <SidebarLink to="/resgates" end icon="mdi-magnify">
+              Pesquisa de resgates
+            </SidebarLink>
+            <SidebarLink to="/resgates/efetuar" icon="mdi-gift">
+              Resgatar produto
+            </SidebarLink>
+          </ul>
         </nav>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {tenant?.name && (
-            <span
-              style={{
-              color: "#111827",
-              fontWeight: 600,
-              fontSize: "0.95rem",
-              }}
-            >
-              {tenant.name}
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={logout}
-            style={{
-              padding: "8px 16px",
-              backgroundColor: "#f9fafb",
-              border: "1px solid #e5e7eb",
-              borderRadius: 999,
-              fontWeight: 500,
-              cursor: "pointer",
-              fontSize: "0.9rem",
-            }}
-          >
-            Sair
-          </button>
+
+        <div className="main-panel">
+          <div className="content-wrapper">
+            <Outlet />
+          </div>
         </div>
-        </div>
-      </header>
-      <main>
-        <div
-          style={{
-            maxWidth: 1120,
-            margin: "0 auto",
-            padding: "24px 20px 40px",
-          }}
-        >
-          <Outlet />
-        </div>
-      </main>
+      </div>
     </div>
   )
 }

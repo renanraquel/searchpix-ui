@@ -90,7 +90,6 @@ export default function Customers() {
       const res = await fetchApi(`/api/customers/delete?id=${id}`, { method: "POST" })
       if (!res.ok) throw new Error(await res.text())
       await load()
-      // Garante que a página atual ainda exista após exclusão
       const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE))
       if (page > totalPages) {
         setPage(totalPages)
@@ -118,171 +117,155 @@ export default function Customers() {
 
   return (
     <div>
-      <h2 style={{ marginBottom: 8, fontSize: 24, fontWeight: 600, color: "#111827" }}>Clientes</h2>
-      <p style={{ color: "#6b7280", marginBottom: 20, fontSize: 14 }}>
+      <div className="page-header">
+        <h3 className="page-title">Clientes</h3>
+      </div>
+      <p className="text-muted mb-4">
         Cadastre e gerencie os clientes que poderão acumular e resgatar pontos no programa de fidelidade.
       </p>
+
       {error && (
-        <p style={{ color: "#721c24", backgroundColor: "#f8d7da", padding: 12, borderRadius: 6, marginBottom: 16 }}>
+        <div className="cp-alert cp-alert-danger" role="alert">
           {error}
-        </p>
+        </div>
       )}
       {success && (
-        <p style={{ color: "#155724", backgroundColor: "#d4edda", padding: 12, borderRadius: 6, marginBottom: 16 }}>
+        <div className="cp-alert cp-alert-success" role="alert">
           {success}
-        </p>
+        </div>
       )}
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "flex-end",
-          gap: "20px 24px",
-          marginBottom: 24,
-        }}
-      >
-        <div style={{ minWidth: 140 }}>
-          <label style={{ display: "block", marginBottom: 6, fontWeight: 500 }}>CPF *</label>
-          <input
-            type="text"
-            value={form.cpf}
-            onChange={(e) => setForm((f) => ({ ...f, cpf: maskCPF(e.target.value) }))}
-            placeholder="000.000.000-00"
-            maxLength={14}
-            style={{ width: "100%", minWidth: 140, padding: "10px 12px", borderRadius: 6, border: "1px solid #ccc", boxSizing: "border-box" }}
-          />
+
+      <div className="card mb-4">
+        <div className="card-body">
+          <h5 className="card-title mb-3">{editing ? "Editar cliente" : "Novo cliente"}</h5>
+          <form onSubmit={handleSubmit}>
+            <div className="row align-items-end">
+              <div className="col-md-3 col-sm-6 mb-3">
+                <div className="form-group mb-0">
+                  <label htmlFor="cust-cpf">CPF *</label>
+                  <input
+                    id="cust-cpf"
+                    type="text"
+                    className="form-control"
+                    value={form.cpf}
+                    onChange={(e) => setForm((f) => ({ ...f, cpf: maskCPF(e.target.value) }))}
+                    placeholder="000.000.000-00"
+                    maxLength={14}
+                  />
+                </div>
+              </div>
+              <div className="col-md-4 col-sm-6 mb-3">
+                <div className="form-group mb-0">
+                  <label htmlFor="cust-name">Nome *</label>
+                  <input
+                    id="cust-name"
+                    type="text"
+                    className="form-control"
+                    value={form.name}
+                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    required
+                    placeholder="Nome completo"
+                  />
+                </div>
+              </div>
+              <div className="col-md-3 col-sm-6 mb-3">
+                <div className="form-group mb-0">
+                  <label htmlFor="cust-phone">Celular *</label>
+                  <input
+                    id="cust-phone"
+                    type="text"
+                    className="form-control"
+                    value={form.phone}
+                    onChange={(e) => setForm((f) => ({ ...f, phone: maskPhone(e.target.value) }))}
+                    placeholder="(00) 00000-0000"
+                    maxLength={15}
+                  />
+                </div>
+              </div>
+              <div className="col-md-auto mb-3">
+                <button type="submit" className={`btn ${editing ? "btn-success" : "btn-primary"} mr-2`}>
+                  {editing ? "Salvar" : "Cadastrar"}
+                </button>
+                {editing && (
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => {
+                      setEditing(null)
+                      setError("")
+                      setSuccess("")
+                      setForm({ cpf: "", name: "", phone: "" })
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                )}
+              </div>
+            </div>
+          </form>
         </div>
-        <div style={{ minWidth: 200 }}>
-          <label style={{ display: "block", marginBottom: 6, fontWeight: 500 }}>Nome *</label>
-          <input
-            type="text"
-            value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            required
-            placeholder="Nome completo"
-            style={{ width: "100%", minWidth: 200, padding: "10px 12px", borderRadius: 6, border: "1px solid #ccc", boxSizing: "border-box" }}
-          />
-        </div>
-        <div style={{ minWidth: 140 }}>
-          <label style={{ display: "block", marginBottom: 6, fontWeight: 500 }}>Celular *</label>
-          <input
-            type="text"
-            value={form.phone}
-            onChange={(e) => setForm((f) => ({ ...f, phone: maskPhone(e.target.value) }))}
-            placeholder="(00) 00000-0000"
-            maxLength={15}
-            style={{ width: "100%", minWidth: 140, padding: "10px 12px", borderRadius: 6, border: "1px solid #ccc", boxSizing: "border-box" }}
-          />
-        </div>
-        <div style={{ paddingBottom: 2 }}>
-          <label style={{ display: "block", marginBottom: 6, opacity: 0 }}>Ação</label>
-          <button
-            type="submit"
-            style={{
-              padding: "10px 20px",
-              backgroundColor: editing ? "#28a745" : "#0052cc",
-              color: "white",
-              border: "none",
-              borderRadius: 6,
-              fontWeight: "bold",
-              cursor: "pointer",
-              marginRight: editing ? 8 : 0,
-            }}
-          >
-            {editing ? "Salvar" : "Cadastrar"}
-          </button>
-          {editing && (
-            <button
-              type="button"
-              onClick={() => {
-                setEditing(null)
-                setError("")
-                setSuccess("")
-                setForm({ cpf: "", name: "", phone: "" })
-              }}
-              style={{ padding: "10px 16px", border: "1px solid #ccc", borderRadius: 6, cursor: "pointer" }}
-            >
-              Cancelar
-            </button>
-          )}
-        </div>
-      </form>
+      </div>
+
       {loading ? (
-        <p>Carregando...</p>
+        <p className="text-muted">Carregando...</p>
       ) : (
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #eee" }}>
-            <colgroup>
-              <col style={{ width: 140 }} />
-              <col />
-              <col style={{ width: 140 }} />
-              <col style={{ width: 90 }} />
-              <col style={{ width: 160 }} />
-            </colgroup>
-            <thead>
-              <tr style={{ backgroundColor: "#f8f9fa" }}>
-                <th style={{ textAlign: "left", padding: 12 }}>CPF</th>
-                <th style={{ textAlign: "left", padding: 12 }}>Nome</th>
-                <th style={{ textAlign: "left", padding: 12 }}>Celular</th>
-                <th style={{ textAlign: "right", padding: 12 }}>Pontos</th>
-                <th style={{ padding: 12 }}>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visible.map((c) => (
-                <tr key={c.id} style={{ borderBottom: "1px solid #eee" }}>
-                  <td style={{ padding: 12 }}>{maskCPF(c.cpf)}</td>
-                  <td style={{ padding: 12 }}>{c.name}</td>
-                  <td style={{ padding: 12 }}>{maskPhone(c.phone)}</td>
-                  <td style={{ padding: 12, textAlign: "right" }}>{c.points_balance ?? 0}</td>
-                  <td style={{ padding: 12 }}>
-                    <div style={{ display: "flex", flexWrap: "nowrap", gap: 8, alignItems: "center" }}>
-                      <button
-                        type="button"
-                        onClick={() => startEdit(c)}
-                        style={{ padding: "6px 12px", cursor: "pointer", whiteSpace: "nowrap" }}
-                      >
+        <>
+          <div className="table-responsive">
+            <table className="table table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>CPF</th>
+                  <th>Nome</th>
+                  <th>Celular</th>
+                  <th className="text-right">Pontos</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((c) => (
+                  <tr key={c.id}>
+                    <td>{maskCPF(c.cpf)}</td>
+                    <td>{c.name}</td>
+                    <td>{maskPhone(c.phone)}</td>
+                    <td className="text-right">{c.points_balance ?? 0}</td>
+                    <td>
+                      <button type="button" className="btn btn-sm btn-outline-primary mr-2" onClick={() => startEdit(c)}>
                         Editar
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(c.id)}
-                        style={{ padding: "6px 12px", color: "#721c24", cursor: "pointer", whiteSpace: "nowrap" }}
-                      >
+                      <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(c.id)}>
                         Excluir
                       </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {list.length === 0 && <p style={{ padding: 24, color: "#666" }}>Nenhum cliente cadastrado.</p>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {list.length === 0 && <p className="text-muted p-3">Nenhum cliente cadastrado.</p>}
           {list.length > 0 && (
-            <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              <span style={{ color: "#666" }}>
+            <div className="d-flex align-items-center flex-wrap mt-3">
+              <span className="text-muted mr-3 mb-2 mb-sm-0">
                 Página {page} de {totalPages} — {total} cliente(s)
               </span>
               <button
                 type="button"
+                className="btn btn-outline-secondary btn-sm mr-2"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
-                style={{ padding: "6px 12px", cursor: page <= 1 ? "not-allowed" : "pointer" }}
               >
                 Anterior
               </button>
               <button
                 type="button"
+                className="btn btn-outline-secondary btn-sm"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
-                style={{ padding: "6px 12px", cursor: page >= totalPages ? "not-allowed" : "pointer" }}
               >
                 Próxima
               </button>
             </div>
           )}
-        </div>
+        </>
       )}
     </div>
   )

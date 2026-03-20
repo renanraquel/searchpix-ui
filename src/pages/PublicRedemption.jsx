@@ -69,14 +69,12 @@ export default function PublicRedemption() {
     load(tenantSlug, raw)
   }
 
-  const backgroundUrl = data?.tenant?.background_image_url
-    ? apiUrl(data.tenant.background_image_url)
-    : null
+  const backgroundUrl = data?.tenant?.background_image_url ? apiUrl(data.tenant.background_image_url) : null
 
   if (!tenantSlug) {
     return (
-      <div style={{ padding: 48, textAlign: "center" }}>
-        <p>Acesso por link do estabelecimento. Ex.: /resgatar?tenant=slug-da-padaria</p>
+      <div className="container py-5 text-center">
+        <p className="text-muted">Acesso por link do estabelecimento. Ex.: /resgatar?tenant=slug-da-padaria</p>
       </div>
     )
   }
@@ -92,217 +90,160 @@ export default function PublicRedemption() {
       }}
     >
       <div
+        className="d-flex justify-content-center align-items-start py-4 px-3"
         style={{
           minHeight: "100vh",
           backgroundColor: backgroundUrl ? "rgba(0,0,0,0.45)" : "transparent",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "flex-start",
-          padding: 24,
           boxSizing: "border-box",
           width: "100%",
           overflowX: "hidden",
         }}
       >
         <div
+          className="card shadow border-0 my-3"
           style={{
             width: "100%",
             maxWidth: 820,
-            marginTop: 24,
-            padding: 24,
-            borderRadius: 16,
             backgroundColor: "rgba(255,255,255,0.96)",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
             boxSizing: "border-box",
             overflow: "hidden",
           }}
         >
-          <h1 style={{ marginBottom: 8 }}>{data?.tenant?.name || "Carregando..."}</h1>
-          <p style={{ color: "#666", marginBottom: 24 }}>Resgate seus pontos</p>
+          <div className="card-body p-4">
+            <h1 className="h3 mb-2">{data?.tenant?.name || "Carregando..."}</h1>
+            <p className="text-muted mb-4">Resgate seus pontos</p>
 
-          {!data?.customer && (
-            <form onSubmit={handleCpfSubmit} style={{ marginBottom: 32 }}>
-              <label style={{ display: "block", marginBottom: 8, fontWeight: 600 }}>
-                Digite seu CPF para ver seus pontos e resgatar
-              </label>
-              <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-                <input
-                  type="text"
-                  value={cpf}
-                  onChange={(e) => setCpf(maskCPF(e.target.value))}
-                  placeholder="000.000.000-00"
-                  maxLength={14}
-                  style={{ padding: 12, borderRadius: 6, border: "1px solid #ccc", fontSize: 16, minWidth: 200 }}
-                />
-                <button
-                  type="submit"
-                  disabled={loading}
-                  style={{
-                    padding: "12px 24px",
-                    backgroundColor: "#0052cc",
-                    color: "white",
-                    border: "none",
-                    borderRadius: 6,
-                    fontWeight: "bold",
-                    cursor: loading ? "not-allowed" : "pointer",
-                  }}
-                >
-                  {loading ? "Carregando..." : "Acessar"}
-                </button>
+            {!data?.customer && (
+              <form onSubmit={handleCpfSubmit} className="mb-4">
+                <div className="form-group">
+                  <label htmlFor="public-cpf">Digite seu CPF para ver seus pontos e resgatar</label>
+                  <div className="d-flex flex-wrap align-items-center">
+                    <input
+                      id="public-cpf"
+                      type="text"
+                      className="form-control mr-2 mb-2 mb-sm-0"
+                      style={{ maxWidth: 220 }}
+                      value={cpf}
+                      onChange={(e) => setCpf(maskCPF(e.target.value))}
+                      placeholder="000.000.000-00"
+                      maxLength={14}
+                    />
+                    <button type="submit" className="btn btn-primary" disabled={loading}>
+                      {loading ? "Carregando..." : "Acessar"}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            )}
+
+            {error && (
+              <div className="cp-alert cp-alert-danger" role="alert">
+                {error}
               </div>
-            </form>
-          )}
+            )}
 
-          {error && (
-            <div
-              style={{
-                padding: 12,
-                backgroundColor: "#f8d7da",
-                color: "#721c24",
-                borderRadius: 6,
-                marginBottom: 24,
-              }}
-            >
-              {error}
-            </div>
-          )}
+            {loading && !data && <p className="text-muted">Carregando...</p>}
 
-          {loading && !data && <p>Carregando...</p>}
-
-          {data?.customer && (
-            <>
-              <div
-                style={{
-                  backgroundColor: "#f0f4ff",
-                  border: "1px solid #c5d4f0",
-                  borderRadius: 12,
-                  padding: "20px 16px",
-                  marginBottom: 32,
-                  width: "100%",
-                  maxWidth: 480,
-                  boxSizing: "border-box",
-                  minWidth: 0,
-                  overflow: "hidden",
-                }}
-              >
-                <div style={{ fontSize: 14, color: "#555", marginBottom: 6, fontWeight: 600 }}>Cliente</div>
+            {data?.customer && (
+              <>
                 <div
-                  style={{
-                    fontSize: 22,
-                    fontWeight: 700,
-                    color: "#1a1a1a",
-                    marginBottom: 20,
-                    wordBreak: "break-word",
-                    overflowWrap: "break-word",
-                  }}
+                  className="card border-primary mb-4"
+                  style={{ maxWidth: 480, boxSizing: "border-box", minWidth: 0, overflow: "hidden" }}
                 >
-                  {data.customer.name}
-                </div>
-                <div style={{ fontSize: 14, color: "#555", marginBottom: 6, fontWeight: 600 }}>Seus pontos</div>
-                <div style={{ fontSize: 32, fontWeight: 800, color: "#0052cc" }}>
-                  {data.customer.points_balance ?? 0} <span style={{ fontSize: 18, fontWeight: 600 }}>pts</span>
-                </div>
-              </div>
-
-              <h2 style={{ marginBottom: 16 }}>Itens disponíveis para resgate</h2>
-              <div style={{ display: "grid", gap: 16 }}>
-                {data.products?.map((p) => (
-                  <div
-                    key={p.id}
-                    style={{
-                      border: "1px solid #eee",
-                      borderRadius: 8,
-                      padding: 16,
-                      display: "flex",
-                      gap: 16,
-                      alignItems: "center",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    {p.image_url && (
-                      <img
-                        src={p.image_url.startsWith("http") ? p.image_url : apiUrl(p.image_url)}
-                        alt=""
-                        style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 6 }}
-                      />
-                    )}
-                    <div style={{ flex: 1, minWidth: 200 }}>
-                      <strong>{p.description}</strong>
-                      <br />
-                      <span style={{ color: "#0052cc", fontWeight: "bold" }}>
-                        {p.points_required} pontos
-                      </span>
+                  <div className="card-body">
+                    <div className="text-muted small font-weight-bold mb-1">Cliente</div>
+                    <div
+                      className="h5 font-weight-bold text-dark mb-3"
+                      style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+                    >
+                      {data.customer.name}
+                    </div>
+                    <div className="text-muted small font-weight-bold mb-1">Seus pontos</div>
+                    <div className="h3 font-weight-bold text-primary mb-0">
+                      {data.customer.points_balance ?? 0}{" "}
+                      <span className="h5 font-weight-bold">pts</span>
                     </div>
                   </div>
-                ))}
-              </div>
-              {(!data.products || data.products.length === 0) && (
-                <p style={{ color: "#666" }}>Nenhum item disponível para resgate no momento.</p>
-              )}
+                </div>
 
-              {data.redemptions?.length > 0 && (() => {
-                const list = data.redemptions
-                const total = list.length
-                const totalPages = Math.ceil(total / REDEMPTIONS_PAGE_SIZE) || 1
-                const page = Math.min(Math.max(1, redemptionsPage), totalPages)
-                const start = (page - 1) * REDEMPTIONS_PAGE_SIZE
-                const visible = list.slice(start, start + REDEMPTIONS_PAGE_SIZE)
-                return (
-                  <>
-                    <h2 style={{ marginTop: 32, marginBottom: 16 }}>Seus resgates</h2>
-                    <ul style={{ listStyle: "none", padding: 0 }}>
-                      {visible.map((r) => (
-                        <li key={r.id} style={{ padding: "8px 0", borderBottom: "1px solid #eee" }}>
-                          {r.product_description} — {r.points_used} pts - {formatRedemptionDate(r.created_at)}
-                        </li>
-                      ))}
-                    </ul>
-                    {totalPages > 1 && (
-                      <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16 }}>
-                        <button
-                          type="button"
-                          disabled={page <= 1}
-                          onClick={() => setRedemptionsPage((p) => Math.max(1, p - 1))}
-                          style={{
-                            padding: "8px 16px",
-                            border: "1px solid #ccc",
-                            borderRadius: 6,
-                            cursor: page <= 1 ? "not-allowed" : "pointer",
-                            opacity: page <= 1 ? 0.6 : 1,
-                          }}
-                        >
-                          Anterior
-                        </button>
-                        <span style={{ fontSize: 14, color: "#555" }}>
-                          Página {page} de {totalPages}
-                        </span>
-                        <button
-                          type="button"
-                          disabled={page >= totalPages}
-                          onClick={() => setRedemptionsPage((p) => Math.min(totalPages, p + 1))}
-                          style={{
-                            padding: "8px 16px",
-                            border: "1px solid #ccc",
-                            borderRadius: 6,
-                            cursor: page >= totalPages ? "not-allowed" : "pointer",
-                            opacity: page >= totalPages ? 0.6 : 1,
-                          }}
-                        >
-                          Próxima
-                        </button>
+                <h2 className="h4 mb-3">Itens disponíveis para resgate</h2>
+                <div className="d-flex flex-column">
+                  {data.products?.map((p) => (
+                    <div key={p.id} className="card mb-3">
+                      <div className="card-body d-flex flex-wrap align-items-center">
+                        {p.image_url && (
+                          <img
+                            src={p.image_url.startsWith("http") ? p.image_url : apiUrl(p.image_url)}
+                            alt=""
+                            className="rounded mr-3 mb-2 mb-md-0"
+                            style={{ width: 80, height: 80, objectFit: "cover" }}
+                          />
+                        )}
+                        <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                          <strong>{p.description}</strong>
+                          <div className="text-primary font-weight-bold">{p.points_required} pontos</div>
+                        </div>
                       </div>
-                    )}
-                  </>
-                )
-              })()}
-            </>
-          )}
+                    </div>
+                  ))}
+                </div>
+                {(!data.products || data.products.length === 0) && (
+                  <p className="text-muted">Nenhum item disponível para resgate no momento.</p>
+                )}
 
-          {data && !data.customer && cpfParam && !loading && (
-            <p style={{ color: "#856404", backgroundColor: "#fff3cd", padding: 12, borderRadius: 6 }}>
-              CPF não encontrado. Verifique o número ou cadastre-se no estabelecimento.
-            </p>
-          )}
+                {data.redemptions?.length > 0 &&
+                  (() => {
+                    const list = data.redemptions
+                    const total = list.length
+                    const totalPages = Math.ceil(total / REDEMPTIONS_PAGE_SIZE) || 1
+                    const page = Math.min(Math.max(1, redemptionsPage), totalPages)
+                    const start = (page - 1) * REDEMPTIONS_PAGE_SIZE
+                    const visible = list.slice(start, start + REDEMPTIONS_PAGE_SIZE)
+                    return (
+                      <>
+                        <h2 className="h4 mt-4 mb-3">Seus resgates</h2>
+                        <ul className="list-group list-group-flush mb-3">
+                          {visible.map((r) => (
+                            <li key={r.id} className="list-group-item px-0">
+                              {r.product_description} — {r.points_used} pts — {formatRedemptionDate(r.created_at)}
+                            </li>
+                          ))}
+                        </ul>
+                        {totalPages > 1 && (
+                          <div className="d-flex align-items-center flex-wrap">
+                            <button
+                              type="button"
+                              className="btn btn-outline-secondary btn-sm mr-2"
+                              disabled={page <= 1}
+                              onClick={() => setRedemptionsPage((p) => Math.max(1, p - 1))}
+                            >
+                              Anterior
+                            </button>
+                            <span className="text-muted small mr-2">
+                              Página {page} de {totalPages}
+                            </span>
+                            <button
+                              type="button"
+                              className="btn btn-outline-secondary btn-sm"
+                              disabled={page >= totalPages}
+                              onClick={() => setRedemptionsPage((p) => Math.min(totalPages, p + 1))}
+                            >
+                              Próxima
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )
+                  })()}
+              </>
+            )}
+
+            {data && !data.customer && cpfParam && !loading && (
+              <div className="cp-alert cp-alert-warning mb-0">
+                CPF não encontrado. Verifique o número ou cadastre-se no estabelecimento.
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

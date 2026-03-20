@@ -1,0 +1,94 @@
+/* Ajustes para React + React Router + Connect Plus */
+
+#root {
+  min-height: 100vh;
+}
+
+/* Marca em texto (substitui logo SVG) */
+.app-brand-text {
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+  color: #1b2a4e;
+  white-space: nowrap;
+}
+
+.app-brand-text--mini {
+  font-size: 0.85rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-brand-text--login {
+  font-size: 1.5rem;
+  display: inline-block;
+}
+
+.app-brand-text-link {
+  text-decoration: none !important;
+}
+
+.app-brand-text-link:hover .app-brand-text {
+  color: #0d47a1;
+}
+
+/* "RR Solutions" só na barra superior: verde dos ícones do tema (#33c92d) */
+.navbar-brand-wrapper .app-brand-text {
+  color: #33c92d;
+}
+
+.navbar-brand-wrapper .app-brand-text-link:hover .app-brand-text {
+  color: #2ba827;
+}
+
+/* Área da marca estreita (mobile): texto menor + reticências */
+@media (max-width: 991px) {
+  .navbar-brand-wrapper .app-brand-text {
+    font-size: 0.75rem;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* NavLink no menu lateral: estado ativo */
+.sidebar .nav .nav-link.active,
+.sidebar .nav .nav-item.active > .nav-link {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.sidebar .nav .nav-link {
+  text-decoration: none;
+}
+
+/* Tabelas dentro do painel principal */
+.content-wrapper .table-responsive {
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+/* Alertas inline (substitui parte dos estilos inline) */
+.cp-alert {
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+.cp-alert-danger {
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+}
+.cp-alert-success {
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+}
+.cp-alert-warning {
+  color: #856404;
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+}

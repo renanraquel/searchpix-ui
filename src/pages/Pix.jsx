@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { fetchApi, apiUrl } from "../api"
+import { apiUrl } from "../api"
 
 function formatarDataHora(dataIso) {
   return new Date(dataIso).toLocaleString("pt-BR", {
@@ -64,127 +64,101 @@ export default function Pix() {
 
   return (
     <div>
-      <h2 style={{ marginBottom: 8, fontSize: 24, fontWeight: 600, color: "#111827" }}>Consultar PIX recebidos</h2>
-      <p style={{ marginBottom: 24, color: "#6b7280", fontSize: 14 }}>
+      <div className="page-header">
+        <h3 className="page-title">Consultar PIX recebidos</h3>
+      </div>
+      <p className="text-muted mb-4">
         Filtre os recebimentos por período para ver detalhes de cada PIX e o valor total no intervalo.
       </p>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "flex-end",
-          gap: "24px 20px",
-          marginBottom: 20,
-        }}
-      >
-        <div style={{ minWidth: 160 }}>
-          <label style={{ display: "block", marginBottom: 8, fontWeight: 500 }}>Data Início</label>
-          <input
-            type="date"
-            value={inicio}
-            onChange={(e) => setInicio(e.target.value)}
-            style={{ width: "100%", minWidth: 160, height: 40, padding: "8px 12px", borderRadius: 6, border: "1px solid #ccc", boxSizing: "border-box" }}
-          />
+
+      <div className="row align-items-end mb-4">
+        <div className="col-md-3 col-sm-6 mb-3 mb-md-0">
+          <div className="form-group mb-0">
+            <label htmlFor="pix-inicio">Data início</label>
+            <input
+              id="pix-inicio"
+              type="date"
+              className="form-control"
+              value={inicio}
+              onChange={(e) => setInicio(e.target.value)}
+            />
+          </div>
         </div>
-        <div style={{ minWidth: 160 }}>
-          <label style={{ display: "block", marginBottom: 8, fontWeight: 500 }}>Data Fim</label>
-          <input
-            type="date"
-            value={fim}
-            onChange={(e) => setFim(e.target.value)}
-            style={{ width: "100%", minWidth: 160, height: 40, padding: "8px 12px", borderRadius: 6, border: "1px solid #ccc", boxSizing: "border-box" }}
-          />
+        <div className="col-md-3 col-sm-6 mb-3 mb-md-0">
+          <div className="form-group mb-0">
+            <label htmlFor="pix-fim">Data fim</label>
+            <input
+              id="pix-fim"
+              type="date"
+              className="form-control"
+              value={fim}
+              onChange={(e) => setFim(e.target.value)}
+            />
+          </div>
         </div>
-        <div style={{ paddingBottom: 2 }}>
-          <label style={{ display: "block", marginBottom: 8, opacity: 0 }}>Ação</label>
-          <button
-            type="button"
-            onClick={buscarPix}
-            disabled={loading}
-            style={{
-              height: 40,
-              padding: "0 24px",
-              minWidth: 120,
-              backgroundColor: "#0052cc",
-              color: "#fff",
-              border: "none",
-              borderRadius: 6,
-              fontWeight: "bold",
-              cursor: loading ? "not-allowed" : "pointer",
-              fontSize: 15,
-            }}
-          >
+        <div className="col-md-auto">
+          <button type="button" className="btn btn-primary" onClick={buscarPix} disabled={loading}>
             {loading ? "Buscando..." : "Pesquisar"}
           </button>
         </div>
       </div>
+
       {erro && (
-        <p
-          style={{
-            color: "#b91c1c",
-            padding: 12,
-            backgroundColor: "#fee2e2",
-            border: "1px solid #fecaca",
-            borderRadius: 8,
-            marginBottom: 20,
-            fontSize: 14,
-          }}
-        >
+        <div className="cp-alert cp-alert-danger" role="alert">
           {erro}
-        </p>
+        </div>
       )}
+
       {pixList.length > 0 ? (
         <>
-          <div style={{ overflowX: "auto" }}>
-            <table width="100%" style={{ borderCollapse: "collapse", border: "1px solid #eee", fontSize: 16 }}>
+          <div className="table-responsive">
+            <table className="table table-striped table-hover">
               <thead>
-                <tr style={{ backgroundColor: "#f8f9fa" }}>
-                  <th style={{ textAlign: "left", padding: 15 }}>Horário</th>
-                  <th style={{ textAlign: "left", padding: 15 }}>CPF/CNPJ</th>
-                  <th style={{ textAlign: "left", padding: 15 }}>Nome</th>
-                  <th style={{ textAlign: "right", padding: 15 }}>Valor</th>
+                <tr>
+                  <th>Horário</th>
+                  <th>CPF/CNPJ</th>
+                  <th>Nome</th>
+                  <th className="text-right">Valor</th>
                 </tr>
               </thead>
               <tbody>
                 {pixPaginado.map((pix, i) => (
-                  <tr key={i} style={{ borderBottom: "1px solid #eee" }}>
-                    <td style={{ padding: 15 }}>{formatarDataHora(pix.horario)}</td>
-                    <td style={{ padding: 15 }}>{pix.cpf}</td>
-                    <td style={{ padding: 15 }}>{pix.nome}</td>
-                    <td style={{ textAlign: "right", fontWeight: 700, color: "#2e7d32", padding: 15 }}>
-                      {formatarValorBR(pix.valor)}
-                    </td>
+                  <tr key={i}>
+                    <td>{formatarDataHora(pix.horario)}</td>
+                    <td>{pix.cpf}</td>
+                    <td>{pix.nome}</td>
+                    <td className="text-right font-weight-bold text-success">{formatarValorBR(pix.valor)}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr style={{ borderTop: "2px solid #eee", backgroundColor: "#f8f9fa" }}>
-                  <td colSpan={3} style={{ padding: 15, textAlign: "right", fontWeight: 600 }}>
-                    Soma Total PIX:
+                <tr className="table-secondary font-weight-bold">
+                  <td colSpan={3} className="text-right">
+                    Soma total PIX
                   </td>
-                  <td style={{ padding: 15, textAlign: "right", fontWeight: 700, color: "#0052cc" }}>
-                    {formatarValorBR(valorTotalPix)}
-                  </td>
+                  <td className="text-right text-primary">{formatarValorBR(valorTotalPix)}</td>
                 </tr>
               </tfoot>
             </table>
           </div>
           {totalPaginas > 1 && (
-            <div style={{ marginTop: 25, display: "flex", gap: 15, alignItems: "center", justifyContent: "flex-end" }}>
-              <span style={{ color: "#666" }}>Página {paginaAtual} de {totalPaginas}</span>
+            <div className="d-flex align-items-center justify-content-end flex-wrap mt-3">
+              <span className="text-muted mr-3 mb-2 mb-sm-0">
+                Página {paginaAtual} de {totalPaginas}
+              </span>
               <button
                 type="button"
+                className="btn btn-outline-secondary btn-sm mr-2"
                 onClick={() => setPaginaAtual((p) => Math.max(p - 1, 1))}
                 disabled={paginaAtual === 1}
-                style={{ padding: "10px 20px", cursor: "pointer" }}
               >
                 Anterior
               </button>
               <button
                 type="button"
+                className="btn btn-outline-secondary btn-sm"
                 onClick={() => setPaginaAtual((p) => Math.min(p + 1, totalPaginas))}
                 disabled={paginaAtual === totalPaginas}
-                style={{ padding: "10px 20px", cursor: "pointer" }}
               >
                 Próxima
               </button>
@@ -192,11 +166,7 @@ export default function Pix() {
           )}
         </>
       ) : (
-        !loading && (
-          <p style={{ textAlign: "center", marginTop: 48, color: "#999" }}>
-            Selecione as datas e clique em Pesquisar para buscar PIX.
-          </p>
-        )
+        !loading && <p className="text-center text-muted mt-5">Selecione as datas e clique em Pesquisar para buscar PIX.</p>
       )}
     </div>
   )
