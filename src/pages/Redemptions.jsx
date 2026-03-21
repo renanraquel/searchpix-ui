@@ -14,6 +14,10 @@ function maskPhone(v) {
   return n.replace(/(\d{2})(\d{5})(\d{0,4})/, (_, a, b, c) => `(${a}) ${b}${c ? `-${c}` : ""}`)
 }
 
+function nameToUpper(s) {
+  return String(s).toLocaleUpperCase("pt-BR")
+}
+
 function formatDate(d) {
   if (!d) return "—"
   const t = typeof d === "string" ? d : d?.Time ? d.Time : d
@@ -106,6 +110,16 @@ export default function Redemptions() {
   const items = data?.items ?? []
   const total = data?.total ?? 0
   const totalPages = data?.total_pages ?? 1
+  const qHasLetters = /[a-zA-ZÀ-ÿ]/.test(q)
+
+  function handleQChange(e) {
+    const v = e.target.value
+    if (/[a-zA-ZÀ-ÿ]/.test(v)) {
+      setQ(nameToUpper(v))
+    } else {
+      setQ(v)
+    }
+  }
 
   return (
     <div>
@@ -153,10 +167,12 @@ export default function Redemptions() {
               <input
                 id="red-q"
                 type="text"
-                className="form-control"
+                className={`form-control${qHasLetters ? " text-uppercase" : ""}`}
                 value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Filtrar por nome ou CPF"
+                onChange={handleQChange}
+                placeholder="NOME OU CPF"
+                autoCapitalize={qHasLetters ? "characters" : undefined}
+                spellCheck={false}
               />
             </div>
           </div>
@@ -194,7 +210,7 @@ export default function Redemptions() {
                 {items.map((row) => (
                   <tr key={row.id}>
                     <td>{formatDate(row.created_at)}</td>
-                    <td>{row.customer_name}</td>
+                    <td className="text-uppercase">{nameToUpper(row.customer_name || "")}</td>
                     <td>{maskCPF(row.cpf)}</td>
                     <td>{maskPhone(row.phone)}</td>
                     <td className="text-right font-weight-bold">{row.points_used}</td>

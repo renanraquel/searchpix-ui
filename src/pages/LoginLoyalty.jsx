@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Link } from "react-router-dom"
 import { setAuth, apiUrl } from "../api"
 
 export default function LoginLoyalty({ onLogin }) {
@@ -50,6 +51,11 @@ export default function LoginLoyalty({ onLogin }) {
                 </div>
                 <h4>Acesso — Fidelização</h4>
                 <h6 className="font-weight-light">Entre com seu usuário e senha.</h6>
+                <p className="mb-0 mt-2">
+                  <Link to="/precos" className="text-primary small">
+                    Ver planos e preços
+                  </Link>
+                </p>
                 <form className="pt-3" onSubmit={handleSubmit}>
                   <div className="form-group">
                     <label htmlFor="login-user" className="sr-only">

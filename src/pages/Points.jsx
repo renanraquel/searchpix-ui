@@ -14,6 +14,10 @@ function maskPhone(v) {
   return n.replace(/(\d{2})(\d{5})(\d{0,4})/, (_, a, b, c) => `(${a}) ${b}${c ? `-${c}` : ""}`)
 }
 
+function nameToUpper(s) {
+  return String(s).toLocaleUpperCase("pt-BR")
+}
+
 function filterCustomersByName(customers, term) {
   const words = term.trim().toLowerCase().split(/\s+/).filter(Boolean)
   if (words.length === 0) return []
@@ -85,7 +89,7 @@ export default function Points() {
   function handleSearchChange(e) {
     const v = e.target.value
     if (/[a-zA-ZÀ-ÿ]/.test(v)) {
-      setSearchInput(v)
+      setSearchInput(nameToUpper(v))
       setShowSuggestions(true)
       setMessage({ type: "", text: "" })
     } else {
@@ -98,9 +102,9 @@ export default function Points() {
 
   function selectCustomer(c) {
     setCustomer(c)
-    setSearchInput(c.name)
+    setSearchInput(nameToUpper(c.name || ""))
     setShowSuggestions(false)
-    setMessage({ type: "success", text: `Cliente: ${c.name} | ${maskPhone(c.phone)}` })
+    setMessage({ type: "success", text: `Cliente: ${nameToUpper(c.name || "")} | ${maskPhone(c.phone)}` })
   }
 
   async function verifyCpf() {
@@ -116,7 +120,11 @@ export default function Points() {
       const data = await res.json()
       if (data.found) {
         setCustomer(data.customer)
-        setMessage({ type: "success", text: `Cliente: ${data.customer.name} | ${maskPhone(data.customer.phone)}` })
+        setSearchInput(nameToUpper(data.customer.name || ""))
+        setMessage({
+          type: "success",
+          text: `Cliente: ${nameToUpper(data.customer.name || "")} | ${maskPhone(data.customer.phone)}`,
+        })
       } else {
         setMessage({
           type: "warning",
@@ -194,11 +202,13 @@ export default function Points() {
                 ref={inputRef}
                 id="points-client"
                 type="text"
-                className="form-control"
+                className={`form-control${hasLetters ? " text-uppercase" : ""}`}
                 value={searchInput}
                 onChange={handleSearchChange}
                 onFocus={() => hasLetters && suggestions.length > 0 && setShowSuggestions(true)}
-                placeholder="Digite o CPF ou o nome do cliente"
+                placeholder="CPF ou NOME DO CLIENTE"
+                autoCapitalize={hasLetters ? "characters" : undefined}
+                spellCheck={false}
                 disabled={!!customer}
               />
               {showSuggestions && suggestions.length > 0 && (
@@ -214,7 +224,7 @@ export default function Points() {
                       style={{ cursor: "pointer" }}
                       onClick={() => selectCustomer(c)}
                     >
-                      <strong>{c.name}</strong>
+                      <strong className="text-uppercase">{nameToUpper(c.name || "")}</strong>
                       <small className="d-block text-muted">
                         {maskCPF(c.cpf)} · {maskPhone(c.phone)}
                       </small>

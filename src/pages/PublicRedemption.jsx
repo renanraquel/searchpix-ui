@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useSearchParams } from "react-router-dom"
+import { Link, useSearchParams } from "react-router-dom"
 import { apiUrl } from "../api"
 
 const REDEMPTIONS_PAGE_SIZE = 5
@@ -74,7 +74,14 @@ export default function PublicRedemption() {
   if (!tenantSlug) {
     return (
       <div className="container py-5 text-center">
-        <p className="text-muted">Acesso por link do estabelecimento. Ex.: /resgatar?tenant=slug-da-padaria</p>
+        <p className="text-muted mb-2">Acesso por link do estabelecimento. Ex.: /resgatar?tenant=slug-da-padaria</p>
+        <p className="text-muted small mb-0">
+          Primeiro acesso?{" "}
+          <Link to="/cadastro" className="text-primary">
+            Cadastro no programa de fidelidade
+          </Link>{" "}
+          (use o mesmo <code>tenant</code> no link).
+        </p>
       </div>
     )
   }
@@ -240,7 +247,15 @@ export default function PublicRedemption() {
 
             {data && !data.customer && cpfParam && !loading && (
               <div className="cp-alert cp-alert-warning mb-0">
-                CPF não encontrado. Verifique o número ou cadastre-se no estabelecimento.
+                <span className="d-block mb-2">
+                  CPF não encontrado. Verifique o número ou cadastre-se no programa de fidelidade.
+                </span>
+                <Link
+                  to={`/cadastro?tenant=${encodeURIComponent(tenantSlug)}`}
+                  className="btn btn-sm btn-outline-primary font-weight-bold"
+                >
+                  Quero me cadastrar
+                </Link>
               </div>
             )}
           </div>

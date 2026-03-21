@@ -20,6 +20,21 @@ function filterCustomersByName(customers, term) {
   return customers.filter((c) => words.every((w) => c.name.toLowerCase().includes(w)))
 }
 
+function nameToUpper(s) {
+  return String(s).toLocaleUpperCase("pt-BR")
+}
+
+/** Painel principal do layout (Connect Plus) costuma rolar aqui, não na window. */
+function scrollToTopOfPage() {
+  requestAnimationFrame(() => {
+    const panel = document.querySelector(".main-panel")
+    if (panel) panel.scrollTo({ top: 0, behavior: "smooth" })
+    window.scrollTo({ top: 0, behavior: "smooth" })
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+  })
+}
+
 export default function EfetuarResgate() {
   const [customersList, setCustomersList] = useState([])
   const [productsList, setProductsList] = useState([])
@@ -79,7 +94,7 @@ export default function EfetuarResgate() {
   function handleSearchChange(e) {
     const v = e.target.value
     if (/[a-zA-ZÀ-ÿ]/.test(v)) {
-      setSearchInput(v)
+      setSearchInput(nameToUpper(v))
       setShowSuggestions(true)
       setMessage({ type: "", text: "" })
     } else {
@@ -107,7 +122,7 @@ export default function EfetuarResgate() {
     } catch {
       setCustomer(c)
     }
-    setSearchInput(c.name)
+    setSearchInput(nameToUpper(c.name || ""))
     setShowSuggestions(false)
     setMessage({ type: "", text: "" })
   }
@@ -125,6 +140,7 @@ export default function EfetuarResgate() {
       const data = await res.json()
       if (data.found) {
         setCustomer(data.customer)
+        setSearchInput(nameToUpper(data.customer.name || ""))
         setMessage({ type: "", text: "" })
       } else {
         setMessage({
@@ -171,6 +187,10 @@ export default function EfetuarResgate() {
           ? { ...prev, points_balance: balance - (product.points_required ?? 0) }
           : null
       )
+      // Após o próximo paint, leva o scroll ao topo para a mensagem ficar visível (lista longa).
+      requestAnimationFrame(() => {
+        setTimeout(scrollToTopOfPage, 0)
+      })
     } catch (e) {
       setMessage({ type: "error", text: e.message })
     } finally {
@@ -201,11 +221,13 @@ export default function EfetuarResgate() {
                 ref={inputRef}
                 id="resgate-client"
                 type="text"
-                className="form-control"
+                className={`form-control${hasLetters ? " text-uppercase" : ""}`}
                 value={searchInput}
                 onChange={handleSearchChange}
                 onFocus={() => hasLetters && suggestions.length > 0 && setShowSuggestions(true)}
-                placeholder="Digite o CPF ou o nome do cliente"
+                placeholder="CPF ou NOME DO CLIENTE"
+                autoCapitalize={hasLetters ? "characters" : undefined}
+                spellCheck={false}
                 disabled={!!customer}
               />
               {showSuggestions && suggestions.length > 0 && (
@@ -221,7 +243,7 @@ export default function EfetuarResgate() {
                       style={{ cursor: "pointer" }}
                       onClick={() => selectCustomer(c)}
                     >
-                      <strong>{c.name}</strong>
+                      <strong className="text-uppercase">{nameToUpper(c.name || "")}</strong>
                       <small className="d-block text-muted">
                         {maskCPF(c.cpf)} · {maskPhone(c.phone)} · {c.points_balance ?? 0} pts
                       </small>
@@ -260,7 +282,7 @@ export default function EfetuarResgate() {
           <>
             <div className="card border-primary mb-4">
               <div className="card-body">
-                <h5 className="card-title mb-1">{customer.name}</h5>
+                <h5 className="card-title mb-1 text-uppercase">{nameToUpper(customer.name || "")}</h5>
                 <p className="card-text text-muted mb-2 small">
                   {maskCPF(customer.cpf)} · {maskPhone(customer.phone)}
                 </p>

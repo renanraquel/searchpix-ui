@@ -10,6 +10,8 @@ import Points from "./pages/Points"
 import Redemptions from "./pages/Redemptions"
 import EfetuarResgate from "./pages/EfetuarResgate"
 import PublicRedemption from "./pages/PublicRedemption"
+import Pricing from "./pages/Pricing"
+import PublicRegister from "./pages/PublicRegister"
 
 function PrivateRoute({ children }) {
   const token = getToken()
@@ -24,6 +26,8 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/resgatar" element={<PublicRedemption />} />
+        <Route path="/cadastro" element={<PublicRegister />} />
+        <Route path="/precos" element={<Pricing />} />
         <Route
           path="/login"
           element={

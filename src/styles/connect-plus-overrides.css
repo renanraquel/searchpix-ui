@@ -92,3 +92,160 @@
   background-color: #fff3cd;
   border: 1px solid #ffeeba;
 }
+
+/* ---------- Página de preços (marketing) ---------- */
+.pricing-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.pricing-page main {
+  flex: 1 0 auto;
+}
+
+.pricing-header {
+  background: #fff;
+}
+
+.pricing-header__brand {
+  color: #33c92d !important;
+}
+
+.pricing-header .app-brand-text-link:hover .pricing-header__brand {
+  color: #2ba827 !important;
+}
+
+.pricing-hero {
+  background: linear-gradient(180deg, #f8f9fb 0%, #fff 100%);
+}
+
+.pricing-hero__title {
+  color: #1b2a4e;
+}
+
+.pricing-hero__lead {
+  max-width: 36rem;
+}
+
+.letter-spacing-1 {
+  letter-spacing: 0.08em;
+}
+
+.pricing-card {
+  border-radius: 12px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.pricing-card:hover {
+  box-shadow: 0 0.5rem 1.5rem rgba(27, 42, 78, 0.1) !important;
+}
+
+/* Card clicável: borda neutra; verde só quando .pricing-card--selected */
+.pricing-card--selectable {
+  cursor: pointer;
+  border: 2px solid #e8eaef !important;
+  outline: none;
+  text-align: left;
+  width: 100%;
+  background: #fff;
+  margin-bottom: 0;
+}
+
+.pricing-card--selectable:hover {
+  border-color: #cfd4dc !important;
+}
+
+.pricing-card--selectable:focus {
+  box-shadow: 0 0 0 3px rgba(51, 201, 45, 0.35);
+}
+
+.pricing-card--selectable.pricing-card--selected {
+  border-color: #33c92d !important;
+  box-shadow: 0 0.35rem 1.25rem rgba(51, 201, 45, 0.18);
+}
+
+.pricing-card--selectable.pricing-card--selected:hover {
+  box-shadow: 0 0.5rem 1.5rem rgba(51, 201, 45, 0.22) !important;
+}
+
+/* Faixa “Inclui PIX” — só no card do plano PIX */
+.pricing-card--pix {
+  position: relative;
+  overflow: hidden;
+}
+
+.pricing-card__ribbon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #33c92d;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.35rem 2.5rem 0.35rem 1rem;
+  border-radius: 0 0 0 8px;
+}
+
+.pricing-card__currency {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #5c6370;
+  vertical-align: super;
+  margin-right: 0.15rem;
+}
+
+.pricing-card__currency--sm {
+  font-size: 1rem;
+}
+
+.pricing-card__amount {
+  font-size: 2.75rem;
+  font-weight: 700;
+  color: #1b2a4e;
+  line-height: 1;
+}
+
+.pricing-card__amount--sm {
+  font-size: 2rem;
+}
+
+.pricing-card__list li {
+  position: relative;
+  padding-left: 1.35rem;
+  margin-bottom: 0.65rem;
+  color: #444;
+  font-size: 0.95rem;
+}
+
+.pricing-card__list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.45rem;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #33c92d;
+}
+
+.pricing-card__badge {
+  background: rgba(51, 201, 45, 0.15);
+  color: #238f1f;
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+}
+
+.pricing-card__once {
+  padding: 1rem;
+  background: #f3faf3;
+  border-radius: 8px;
+}
+
+.pricing-faq .card {
+  border-radius: 8px;
+}

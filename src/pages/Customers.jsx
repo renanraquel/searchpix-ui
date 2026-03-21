@@ -14,6 +14,11 @@ function maskPhone(v) {
   return n.replace(/(\d{2})(\d{5})(\d{0,4})/, (_, a, b, c) => `(${a}) ${b}${c ? `-${c}` : ""}`)
 }
 
+/** Nome sempre em maiúsculas (pt-BR), inclusive acentos. */
+function nameToUpper(s) {
+  return String(s).toLocaleUpperCase("pt-BR")
+}
+
 export default function Customers() {
   const [list, setList] = useState([])
   const [loading, setLoading] = useState(true)
@@ -57,7 +62,7 @@ export default function Customers() {
           method: "POST",
           body: JSON.stringify({
             cpf: form.cpf.replace(/\D/g, ""),
-            name: form.name.trim(),
+            name: nameToUpper(form.name).trim(),
             phone: form.phone.replace(/\D/g, ""),
           }),
         })
@@ -67,7 +72,7 @@ export default function Customers() {
           method: "POST",
           body: JSON.stringify({
             cpf: form.cpf.replace(/\D/g, ""),
-            name: form.name.trim(),
+            name: nameToUpper(form.name).trim(),
             phone: form.phone.replace(/\D/g, ""),
           }),
         })
@@ -110,7 +115,7 @@ export default function Customers() {
     setEditing(c)
     setForm({
       cpf: maskCPF(c.cpf),
-      name: c.name,
+      name: nameToUpper(c.name || ""),
       phone: maskPhone(c.phone),
     })
   }
@@ -160,11 +165,13 @@ export default function Customers() {
                   <input
                     id="cust-name"
                     type="text"
-                    className="form-control"
+                    className="form-control text-uppercase"
                     value={form.name}
-                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    onChange={(e) => setForm((f) => ({ ...f, name: nameToUpper(e.target.value) }))}
                     required
-                    placeholder="Nome completo"
+                    placeholder="NOME COMPLETO"
+                    autoCapitalize="characters"
+                    spellCheck={false}
                   />
                 </div>
               </div>

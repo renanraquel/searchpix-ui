@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react"
 import { fetchApi, apiUrl, getToken } from "../api"
 
+function descToUpper(s) {
+  return String(s).toLocaleUpperCase("pt-BR")
+}
+
 export default function Products() {
   const [list, setList] = useState([])
   const [loading, setLoading] = useState(true)
@@ -31,14 +35,15 @@ export default function Products() {
   async function handleSubmit(e) {
     e.preventDefault()
     const points = parseInt(form.points_required, 10)
-    if (!form.description || !points || points < 1) {
+    const description = descToUpper(form.description).trim()
+    if (!description || !points || points < 1) {
       setError("Descrição e pontos (maior que 0) são obrigatórios.")
       return
     }
     setError("")
     try {
       const formData = new FormData()
-      formData.append("description", form.description.trim())
+      formData.append("description", description)
       formData.append("points_required", String(points))
       if (imageFile) formData.append("image", imageFile)
       const token = getToken()
@@ -73,7 +78,7 @@ export default function Products() {
     setEditing(p)
     setImageFile(null)
     setForm({
-      description: p.description,
+      description: descToUpper(p.description || ""),
       points_required: String(p.points_required),
     })
   }
@@ -126,11 +131,13 @@ export default function Products() {
                   <input
                     id="prod-desc"
                     type="text"
-                    className="form-control"
+                    className="form-control text-uppercase"
                     value={form.description}
-                    onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                    onChange={(e) => setForm((f) => ({ ...f, description: descToUpper(e.target.value) }))}
                     required
-                    placeholder="Nome do produto"
+                    placeholder="NOME DO PRODUTO"
+                    autoCapitalize="characters"
+                    spellCheck={false}
                   />
                 </div>
               </div>
@@ -200,7 +207,7 @@ export default function Products() {
                         "—"
                       )}
                     </td>
-                    <td>{p.description}</td>
+                    <td className="text-uppercase">{descToUpper(p.description || "")}</td>
                     <td className="text-right">{p.points_required}</td>
                     <td>
                       <button type="button" className="btn btn-sm btn-outline-primary mr-2" onClick={() => startEdit(p)}>
