@@ -176,8 +176,8 @@ export default function Redemptions() {
               />
             </div>
           </div>
-          <div className="col-md-auto mb-3">
-            <button type="submit" className="btn btn-primary" disabled={loading}>
+          <div className="col-12 col-md-auto mb-3">
+            <button type="submit" className="btn btn-primary btn-block d-md-inline-block" disabled={loading}>
               {loading ? "Buscando..." : "Pesquisar"}
             </button>
           </div>

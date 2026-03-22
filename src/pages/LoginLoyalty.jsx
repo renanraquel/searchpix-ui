@@ -45,7 +45,7 @@ export default function LoginLoyalty({ onLogin }) {
         <div className="content-wrapper d-flex align-items-center auth">
           <div className="row flex-grow w-100 mx-0">
             <div className="col-lg-4 mx-auto">
-              <div className="auth-form-light text-left p-5">
+              <div className="auth-form-light text-left p-3 p-md-5">
                 <div className="brand-logo mb-4">
                   <span className="app-brand-text app-brand-text--login">RR Solutions</span>
                 </div>

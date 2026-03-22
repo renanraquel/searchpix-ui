@@ -152,7 +152,7 @@ export default function PublicRegister() {
             overflow: "hidden",
           }}
         >
-          <div className="card-body p-4">
+          <div className="card-body p-3 p-md-4">
             <h1 className="h3 mb-2">{tenantName || (loadingTenant ? "Carregando…" : "Programa de fidelidade")}</h1>
             <p className="text-muted mb-4">Cadastro no programa de fidelidade</p>
 

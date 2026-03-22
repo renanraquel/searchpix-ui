@@ -96,8 +96,8 @@ export default function Pix() {
             />
           </div>
         </div>
-        <div className="col-md-auto">
-          <button type="button" className="btn btn-primary" onClick={buscarPix} disabled={loading}>
+        <div className="col-12 col-md-auto mb-2 mb-md-0">
+          <button type="button" className="btn btn-primary btn-block d-md-inline-block" onClick={buscarPix} disabled={loading}>
             {loading ? "Buscando..." : "Pesquisar"}
           </button>
         </div>
@@ -142,7 +142,7 @@ export default function Pix() {
             </table>
           </div>
           {totalPaginas > 1 && (
-            <div className="d-flex align-items-center justify-content-end flex-wrap mt-3">
+            <div className="d-flex align-items-center justify-content-center justify-content-sm-end flex-wrap mt-3">
               <span className="text-muted mr-3 mb-2 mb-sm-0">
                 Página {paginaAtual} de {totalPaginas}
               </span>

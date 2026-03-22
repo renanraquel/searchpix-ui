@@ -122,6 +122,8 @@
   background: #fff;
   border-radius: 4px;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
+  -webkit-overflow-scrolling: touch;
+  overflow-x: auto;
 }
 
 /* Alertas inline (substitui parte dos estilos inline) */
@@ -302,4 +304,104 @@
 
 .pricing-faq .card {
   border-radius: 8px;
+}
+
+/* ---------- Telas internas + públicas: celular ---------- */
+@media (max-width: 575.98px) {
+  .main-panel .content-wrapper,
+  .content-wrapper {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .page-header .page-title {
+    font-size: 1.25rem;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+}
+
+/* Campo + botões “Cliente (CPF ou nome)”: não estourar a largura no mobile */
+.cp-flex-input-min {
+  min-width: 0;
+  flex: 1 1 100%;
+}
+
+@media (min-width: 576px) {
+  .cp-flex-input-min {
+    flex: 1 1 auto;
+    min-width: 200px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .cp-client-search-row {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .cp-client-search-row > .cp-flex-input-min {
+    margin-right: 0 !important;
+    margin-bottom: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .cp-client-search-row > .btn {
+    width: 100%;
+    margin-right: 0 !important;
+    margin-top: 0.5rem;
+  }
+
+  .cp-client-search-row > .btn:first-of-type {
+    margin-top: 0;
+  }
+}
+
+/* Valor da compra: largura total no celular, limitada em telas maiores */
+.cp-input-currency-max {
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 400px) {
+  .cp-input-currency-max {
+    max-width: 280px;
+  }
+}
+
+/* Botão de resgate na lista: largura total só no celular */
+@media (max-width: 767.98px) {
+  .cp-redeem-product-btn {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .cp-redeem-product-row {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .cp-redeem-product-row > .d-flex.flex-grow-1 {
+    margin-bottom: 0 !important;
+  }
+}
+
+/* Pricing: títulos e preços não “estouram” em telas estreitas */
+@media (max-width: 575.98px) {
+  .pricing-card__amount {
+    font-size: 2.15rem;
+  }
+
+  .pricing-hero__title {
+    font-size: 1.5rem;
+  }
+}
+
+/* btn-block + d-md-inline-block: largura automática a partir de md */
+@media (min-width: 768px) {
+  .btn.btn-block.d-md-inline-block {
+    width: auto !important;
+    display: inline-block !important;
+  }
 }

@@ -116,7 +116,7 @@ export default function PublicRedemption() {
             overflow: "hidden",
           }}
         >
-          <div className="card-body p-4">
+          <div className="card-body p-3 p-md-4">
             <h1 className="h3 mb-2">{data?.tenant?.name || "Carregando..."}</h1>
             <p className="text-muted mb-4">Resgate seus pontos</p>
 

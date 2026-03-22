@@ -215,8 +215,8 @@ export default function EfetuarResgate() {
 
         <div className="form-group position-relative mb-4">
           <label htmlFor="resgate-client">Cliente (CPF ou nome)</label>
-          <div className="d-flex flex-wrap align-items-stretch">
-            <div className="flex-grow-1 position-relative mr-2 mb-2 mb-sm-0" style={{ minWidth: 200 }}>
+          <div className="d-flex flex-wrap align-items-stretch cp-client-search-row">
+            <div className="flex-grow-1 position-relative mr-2 mb-2 mb-sm-0 cp-flex-input-min">
               <input
                 ref={inputRef}
                 id="resgate-client"
@@ -300,7 +300,10 @@ export default function EfetuarResgate() {
                   const canRedeem = balance >= pts
                   const loading = submitting === product.id
                   return (
-                    <li key={product.id} className="list-group-item d-flex flex-wrap align-items-center justify-content-between">
+                    <li
+                      key={product.id}
+                      className="list-group-item d-flex flex-wrap align-items-center justify-content-between cp-redeem-product-row"
+                    >
                       <div className="d-flex align-items-center flex-grow-1 mb-2 mb-md-0">
                         {product.image_url ? (
                           <img
@@ -319,7 +322,7 @@ export default function EfetuarResgate() {
                       </div>
                       <button
                         type="button"
-                        className={`btn ${canRedeem ? "btn-success" : "btn-secondary"}`}
+                        className={`btn cp-redeem-product-btn ${canRedeem ? "btn-success" : "btn-secondary"}`}
                         onClick={() => handleRedeem(product)}
                         disabled={!canRedeem || loading}
                       >

@@ -155,14 +155,17 @@ export default function Products() {
                   />
                 </div>
               </div>
-              <div className="col-md-auto mb-3">
-                <button type="submit" className={`btn ${editing ? "btn-success" : "btn-primary"} mr-2`}>
+              <div className="col-12 col-md-auto mb-3">
+                <button
+                  type="submit"
+                  className={`btn ${editing ? "btn-success" : "btn-primary"} mr-md-2 mb-2 mb-md-0 btn-block d-md-inline-block`}
+                >
                   {editing ? "Salvar" : "Cadastrar"}
                 </button>
                 {editing && (
                   <button
                     type="button"
-                    className="btn btn-outline-secondary"
+                    className="btn btn-outline-secondary btn-block d-md-inline-block"
                     onClick={() => {
                       setEditing(null)
                       setImageFile(null)

@@ -196,8 +196,8 @@ export default function Points() {
 
         <div className="form-group position-relative mb-4">
           <label htmlFor="points-client">Cliente (CPF ou nome)</label>
-          <div className="d-flex flex-wrap align-items-stretch">
-            <div className="flex-grow-1 position-relative mr-2 mb-2 mb-sm-0" style={{ minWidth: 200 }}>
+          <div className="d-flex flex-wrap align-items-stretch cp-client-search-row">
+            <div className="flex-grow-1 position-relative mr-2 mb-2 mb-sm-0 cp-flex-input-min">
               <input
                 ref={inputRef}
                 id="points-client"
@@ -270,14 +270,17 @@ export default function Points() {
                     id="points-value"
                     type="text"
                     inputMode="decimal"
-                    className="form-control form-control-lg"
-                    style={{ maxWidth: 280 }}
+                    className="form-control form-control-lg cp-input-currency-max"
                     value={valueReais}
                     onChange={(e) => setValueReais(maskCurrencyBR(e.target.value))}
                     placeholder="R$ 0,00"
                   />
                 </div>
-                <button type="submit" className="btn btn-success" disabled={submitting}>
+                <button
+                  type="submit"
+                  className="btn btn-success btn-block d-md-inline-block"
+                  disabled={submitting}
+                >
                   {submitting ? "Lançando..." : "Lançar pontos"}
                 </button>
               </form>
