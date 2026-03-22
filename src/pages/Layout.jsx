@@ -1,12 +1,14 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom"
 import { setAuth, getTenant } from "../api"
 
-function SidebarLink({ to, end, icon, children }) {
+function SidebarLink({ to, end, icon, children, onNavigate }) {
   return (
     <li className="nav-item">
       <NavLink
         to={to}
         end={end}
+        onClick={() => onNavigate?.()}
         className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
       >
         <span className="icon-bg">
@@ -20,7 +22,34 @@ function SidebarLink({ to, end, icon, children }) {
 
 export default function Layout({ onLogout }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const tenant = getTenant()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  useEffect(() => {
+    setMobileMenuOpen(false)
+  }, [location.pathname])
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return
+    function onKey(e) {
+      if (e.key === "Escape") setMobileMenuOpen(false)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [mobileMenuOpen])
+
+  useEffect(() => {
+    function onResize() {
+      if (window.innerWidth >= 992) setMobileMenuOpen(false)
+    }
+    window.addEventListener("resize", onResize)
+    return () => window.removeEventListener("resize", onResize)
+  }, [])
+
+  function closeMobileMenu() {
+    setMobileMenuOpen(false)
+  }
 
   function logout() {
     setAuth(null, null)
@@ -53,29 +82,46 @@ export default function Layout({ onLogout }) {
               </button>
             </li>
           </ul>
+          <button
+            type="button"
+            className="navbar-toggler navbar-toggler-right d-lg-none align-self-center border-0 bg-transparent"
+            aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen((o) => !o)}
+          >
+            <span className="mdi mdi-menu" style={{ fontSize: "1.35rem", color: "#8e94a9" }} />
+          </button>
         </div>
       </nav>
 
-      <div className="container-fluid page-body-wrapper">
-        <nav className="sidebar sidebar-offcanvas" id="sidebar">
+      <div className="container-fluid page-body-wrapper position-relative">
+        <div
+          className={`sidebar-mobile-backdrop d-lg-none${mobileMenuOpen ? " is-visible" : ""}`}
+          aria-hidden="true"
+          onClick={closeMobileMenu}
+        />
+        <nav
+          className={`sidebar sidebar-offcanvas${mobileMenuOpen ? " active" : ""}`}
+          id="sidebar"
+        >
           <ul className="nav">
             <li className="nav-item nav-category">Fidelização</li>
-            <SidebarLink to="/pix" icon="mdi-cash-multiple">
+            <SidebarLink to="/pix" icon="mdi-cash-multiple" onNavigate={closeMobileMenu}>
               PIX
             </SidebarLink>
-            <SidebarLink to="/produtos" icon="mdi-package-variant">
+            <SidebarLink to="/produtos" icon="mdi-package-variant" onNavigate={closeMobileMenu}>
               Produtos
             </SidebarLink>
-            <SidebarLink to="/clientes" icon="mdi-account-multiple">
+            <SidebarLink to="/clientes" icon="mdi-account-multiple" onNavigate={closeMobileMenu}>
               Clientes
             </SidebarLink>
-            <SidebarLink to="/pontos" icon="mdi-star-circle">
+            <SidebarLink to="/pontos" icon="mdi-star-circle" onNavigate={closeMobileMenu}>
               Lançar pontos
             </SidebarLink>
-            <SidebarLink to="/resgates" end icon="mdi-magnify">
+            <SidebarLink to="/resgates" end icon="mdi-magnify" onNavigate={closeMobileMenu}>
               Pesquisa de resgates
             </SidebarLink>
-            <SidebarLink to="/resgates/efetuar" icon="mdi-gift">
+            <SidebarLink to="/resgates/efetuar" icon="mdi-gift" onNavigate={closeMobileMenu}>
               Resgatar produto
             </SidebarLink>
           </ul>
