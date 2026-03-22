@@ -70,6 +70,15 @@ export default function Layout({ onLogout }) {
           </NavLink>
         </div>
         <div className="navbar-menu-wrapper d-flex align-items-stretch flex-grow-1">
+          <button
+            type="button"
+            className="navbar-toggler layout-sidebar-toggle d-lg-none align-self-center border-0 bg-transparent"
+            aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen((o) => !o)}
+          >
+            <span className="mdi mdi-menu" style={{ fontSize: "1.35rem", color: "#8e94a9" }} />
+          </button>
           <ul className="navbar-nav navbar-nav-right ml-auto align-items-center">
             {tenant?.name && (
               <li className="nav-item mr-3 d-none d-md-block">
@@ -82,15 +91,6 @@ export default function Layout({ onLogout }) {
               </button>
             </li>
           </ul>
-          <button
-            type="button"
-            className="navbar-toggler navbar-toggler-right d-lg-none align-self-center border-0 bg-transparent"
-            aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
-            aria-expanded={mobileMenuOpen}
-            onClick={() => setMobileMenuOpen((o) => !o)}
-          >
-            <span className="mdi mdi-menu" style={{ fontSize: "1.35rem", color: "#8e94a9" }} />
-          </button>
         </div>
       </nav>
 

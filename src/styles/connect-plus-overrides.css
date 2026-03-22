@@ -65,6 +65,34 @@
 
 /* Mobile: abrir menu lateral (Connect Plus usa .active + off-canvas; sem jQuery no React) */
 @media (max-width: 991px) {
+  /*
+   * ☰ à esquerda (antes da área Sair): o tema esconde .navbar-toggler sem .navbar-toggler-right no mobile.
+   */
+  .navbar .navbar-menu-wrapper .navbar-toggler.layout-sidebar-toggle {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    order: -1;
+    margin-right: 0.25rem;
+    padding-left: 12px;
+    padding-right: 8px;
+  }
+
+  /*
+   * Painel desliza da esquerda (como no desktop), em vez de right:-258px do template.
+   */
+  .page-body-wrapper .sidebar.sidebar-offcanvas {
+    right: auto !important;
+    left: -258px !important;
+    transition: left 0.25s ease-out !important;
+    -webkit-transition: left 0.25s ease-out !important;
+  }
+
+  .page-body-wrapper .sidebar.sidebar-offcanvas.active {
+    left: 0 !important;
+    right: auto !important;
+  }
+
   .sidebar-mobile-backdrop {
     position: fixed;
     top: 64px;
