@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { fetchApi, apiUrl, getToken } from "../api"
 
 function descToUpper(s) {
@@ -12,6 +12,32 @@ export default function Products() {
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({ description: "", points_required: "" })
   const [imageFile, setImageFile] = useState(null)
+  const [activePoints, setActivePoints] = useState(null)
+
+  const groupedByPoints = useMemo(() => {
+    const groups = new Map()
+    const products = list || []
+    for (const p of products) {
+      const pts = Number(p.points_required ?? 0)
+      const key = Number.isFinite(pts) ? pts : 0
+      if (!groups.has(key)) groups.set(key, [])
+      groups.get(key).push(p)
+    }
+    const pointKeys = Array.from(groups.keys()).sort((a, b) => a - b)
+    return { pointKeys, groups }
+  }, [list])
+
+  const activePtsSafe = activePoints ?? groupedByPoints.pointKeys[0] ?? null
+
+  useEffect(() => {
+    if (groupedByPoints.pointKeys.length === 0) {
+      setActivePoints(null)
+      return
+    }
+    if (activePoints == null || !groupedByPoints.pointKeys.includes(activePoints)) {
+      setActivePoints(groupedByPoints.pointKeys[0])
+    }
+  }, [groupedByPoints.pointKeys.join(","), activePoints])
 
   async function load() {
     setLoading(true)
@@ -185,6 +211,21 @@ export default function Products() {
         <p className="text-muted">Carregando...</p>
       ) : (
         <>
+          {list.length > 0 && (
+            <ul className="nav nav-pills nav-fill mb-3" role="tablist">
+              {groupedByPoints.pointKeys.map((pts) => (
+                <li key={pts} className="nav-item">
+                  <button
+                    type="button"
+                    className={`nav-link${activePtsSafe === pts ? " active" : ""}`}
+                    onClick={() => setActivePoints(pts)}
+                  >
+                    {pts} pontos
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
           <div className="table-responsive">
             <table className="table table-striped table-hover">
               <thead>
@@ -196,11 +237,12 @@ export default function Products() {
                 </tr>
               </thead>
               <tbody>
-                {(list || []).map((p) => (
+                {(groupedByPoints.groups.get(activePtsSafe) || []).map((p) => (
                   <tr key={p.id}>
                     <td>
                       {p.image_url ? (
                         <img
+                          loading="lazy"
                           src={p.image_url.startsWith("http") ? p.image_url : apiUrl(p.image_url)}
                           alt=""
                           className="rounded"

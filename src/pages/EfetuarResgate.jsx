@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { fetchApi, apiUrl } from "../api"
 
 function maskCPF(v) {
@@ -44,6 +44,7 @@ export default function EfetuarResgate() {
   const [message, setMessage] = useState({ type: "", text: "" })
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [submitting, setSubmitting] = useState(null)
+  const [activePoints, setActivePoints] = useState(null)
   const inputRef = useRef(null)
   const dropdownRef = useRef(null)
 
@@ -203,6 +204,31 @@ export default function EfetuarResgate() {
   const msgClass =
     message.type === "error" ? "cp-alert-danger" : message.type === "warning" ? "cp-alert-warning" : "cp-alert-success"
 
+  const groupedProducts = useMemo(() => {
+    const products = productsList || []
+    const groups = new Map()
+    for (const product of products) {
+      const itemPts = Number(product.points_required ?? 0)
+      const key = Number.isFinite(itemPts) ? itemPts : 0
+      if (!groups.has(key)) groups.set(key, [])
+      groups.get(key).push(product)
+    }
+    const pointKeys = Array.from(groups.keys()).sort((a, b) => a - b)
+    return { pointKeys, groups }
+  }, [productsList])
+
+  const activePtsSafe = activePoints ?? groupedProducts.pointKeys[0] ?? null
+
+  useEffect(() => {
+    if (productsList.length === 0) {
+      setActivePoints(null)
+      return
+    }
+    if (activePoints == null || !groupedProducts.pointKeys.includes(activePoints)) {
+      setActivePoints(groupedProducts.pointKeys[0])
+    }
+  }, [productsList.length, groupedProducts.pointKeys.join(","), activePoints])
+
   return (
     <div className="row">
       <div className="col-lg-10">
@@ -294,44 +320,62 @@ export default function EfetuarResgate() {
             {productsList.length === 0 ? (
               <p className="text-muted">Nenhum produto cadastrado. Cadastre na aba Produtos.</p>
             ) : (
-              <ul className="list-group list-group-flush">
-                {(productsList || []).map((product) => {
-                  const pts = product.points_required ?? 0
-                  const canRedeem = balance >= pts
-                  const loading = submitting === product.id
-                  return (
-                    <li
-                      key={product.id}
-                      className="list-group-item d-flex flex-wrap align-items-center justify-content-between cp-redeem-product-row"
-                    >
-                      <div className="d-flex align-items-center flex-grow-1 mb-2 mb-md-0">
-                        {product.image_url ? (
-                          <img
-                            src={product.image_url.startsWith("http") ? product.image_url : apiUrl(product.image_url)}
-                            alt=""
-                            className="rounded mr-3"
-                            style={{ width: 56, height: 56, objectFit: "cover" }}
-                          />
-                        ) : (
-                          <div className="rounded mr-3 bg-light" style={{ width: 56, height: 56 }} />
-                        )}
-                        <div>
-                          <strong>{product.description}</strong>
-                          <span className="text-muted ml-2">{pts} pts</span>
-                        </div>
-                      </div>
+              <>
+                <ul className="nav nav-pills nav-fill mb-3" role="tablist">
+                  {groupedProducts.pointKeys.map((pts) => (
+                    <li key={pts} className="nav-item">
                       <button
                         type="button"
-                        className={`btn cp-redeem-product-btn ${canRedeem ? "btn-success" : "btn-secondary"}`}
-                        onClick={() => handleRedeem(product)}
-                        disabled={!canRedeem || loading}
+                        className={`nav-link${activePtsSafe === pts ? " active" : ""}`}
+                        onClick={() => setActivePoints(pts)}
                       >
-                        {loading ? "Efetuando..." : canRedeem ? "Efetuar resgate" : "Pontos insuficientes"}
+                        {pts} pontos
                       </button>
                     </li>
-                  )
-                })}
-              </ul>
+                  ))}
+                </ul>
+
+                <ul className="list-group list-group-flush">
+                  {(groupedProducts.groups.get(activePtsSafe) || []).map((product) => {
+                    const itemPts = product.points_required ?? 0
+                    const canRedeem = balance >= itemPts
+                    const loading = submitting === product.id
+
+                    return (
+                      <li
+                        key={product.id}
+                        className="list-group-item d-flex flex-wrap align-items-center justify-content-between cp-redeem-product-row"
+                      >
+                        <div className="d-flex align-items-center flex-grow-1 mb-2 mb-md-0">
+                          {product.image_url ? (
+                            <img
+                              loading="lazy"
+                              src={product.image_url.startsWith("http") ? product.image_url : apiUrl(product.image_url)}
+                              alt=""
+                              className="rounded mr-3"
+                              style={{ width: 56, height: 56, objectFit: "cover" }}
+                            />
+                          ) : (
+                            <div className="rounded mr-3 bg-light" style={{ width: 56, height: 56 }} />
+                          )}
+                          <div>
+                            <strong>{product.description}</strong>
+                            <span className="text-muted ml-2">{itemPts} pts</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          className={`btn cp-redeem-product-btn ${canRedeem ? "btn-success" : "btn-secondary"}`}
+                          onClick={() => handleRedeem(product)}
+                          disabled={!canRedeem || loading}
+                        >
+                          {loading ? "Efetuando..." : canRedeem ? "Efetuar resgate" : "Pontos insuficientes"}
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </>
             )}
           </>
         )}

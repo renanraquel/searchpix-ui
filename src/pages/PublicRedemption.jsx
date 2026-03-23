@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import { apiUrl } from "../api"
 
@@ -30,6 +30,7 @@ export default function PublicRedemption() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [redemptionsPage, setRedemptionsPage] = useState(1)
+  const [activePoints, setActivePoints] = useState(null)
   useEffect(() => {
     if (tenantSlug) {
       setCpf(cpfParam)
@@ -70,6 +71,32 @@ export default function PublicRedemption() {
   }
 
   const backgroundUrl = data?.tenant?.background_image_url ? apiUrl(data.tenant.background_image_url) : null
+
+  const groupedProducts = useMemo(() => {
+    const products = data?.products || []
+    const groups = new Map()
+    for (const p of products) {
+      const pts = Number(p.points_required ?? 0)
+      const key = Number.isFinite(pts) ? pts : 0
+      if (!groups.has(key)) groups.set(key, [])
+      groups.get(key).push(p)
+    }
+    const pointKeys = Array.from(groups.keys()).sort((a, b) => a - b)
+    return { pointKeys, groups }
+  }, [data?.products])
+
+  const activePtsSafe = activePoints ?? groupedProducts.pointKeys[0] ?? null
+
+  useEffect(() => {
+    if (!data?.customer) return
+    if (groupedProducts.pointKeys.length === 0) {
+      setActivePoints(null)
+      return
+    }
+    if (activePoints == null || !groupedProducts.pointKeys.includes(activePoints)) {
+      setActivePoints(groupedProducts.pointKeys[0])
+    }
+  }, [data?.customer, groupedProducts.pointKeys.join(","), activePoints])
 
   if (!tenantSlug) {
     return (
@@ -174,28 +201,45 @@ export default function PublicRedemption() {
                 </div>
 
                 <h2 className="h4 mb-3">Itens disponíveis para resgate</h2>
-                <div className="d-flex flex-column">
-                  {data.products?.map((p) => (
-                    <div key={p.id} className="card mb-3">
-                      <div className="card-body d-flex flex-wrap align-items-center">
-                        {p.image_url && (
-                          <img
-                            src={p.image_url.startsWith("http") ? p.image_url : apiUrl(p.image_url)}
-                            alt=""
-                            className="rounded mr-3 mb-2 mb-md-0"
-                            style={{ width: 80, height: 80, objectFit: "cover" }}
-                          />
-                        )}
-                        <div className="flex-grow-1" style={{ minWidth: 0 }}>
-                          <strong>{p.description}</strong>
-                          <div className="text-primary font-weight-bold">{p.points_required} pontos</div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                {(!data.products || data.products.length === 0) && (
+                {(!data.products || data.products.length === 0) ? (
                   <p className="text-muted">Nenhum item disponível para resgate no momento.</p>
+                ) : (
+                  <>
+                    <ul className="nav nav-pills nav-fill mb-3" role="tablist">
+                      {groupedProducts.pointKeys.map((pts) => (
+                        <li key={pts} className="nav-item">
+                          <button
+                            type="button"
+                            className={`nav-link${activePtsSafe === pts ? " active" : ""}`}
+                            onClick={() => setActivePoints(pts)}
+                          >
+                            {pts} pontos
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="d-flex flex-column">
+                      {(groupedProducts.groups.get(activePtsSafe) || []).map((p) => (
+                        <div key={p.id} className="card mb-2">
+                          <div className="card-body d-flex flex-wrap align-items-center">
+                            {p.image_url && (
+                              <img
+                                loading="lazy"
+                                src={p.image_url.startsWith("http") ? p.image_url : apiUrl(p.image_url)}
+                                alt=""
+                                className="rounded mr-3 mb-2 mb-md-0"
+                                style={{ width: 80, height: 80, objectFit: "cover" }}
+                              />
+                            )}
+                            <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                              <strong>{p.description}</strong>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 )}
 
                 {data.redemptions?.length > 0 &&
