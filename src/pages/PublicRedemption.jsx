@@ -145,7 +145,12 @@ export default function PublicRedemption() {
         >
           <div className="card-body p-3 p-md-4">
             <h1 className="h3 mb-2">{data?.tenant?.name || "Carregando..."}</h1>
-            <p className="text-muted mb-4">Resgate seus pontos</p>
+            <p className="text-muted mb-2">Resgate seus pontos</p>
+            <p className="small mb-4">
+              <Link to={`/pontos-nota?tenant=${encodeURIComponent(tenantSlug)}`} className="text-primary">
+                Somar pontos com a NFC-e (QR da nota)
+              </Link>
+            </p>
 
             {!data?.customer && (
               <form onSubmit={handleCpfSubmit} className="mb-4">
