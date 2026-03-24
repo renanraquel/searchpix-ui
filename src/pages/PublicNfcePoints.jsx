@@ -187,29 +187,23 @@ export default function PublicNfcePoints() {
 
   if (!tenantSlug) {
     return (
-      <div className="container py-5 text-center">
-        <p className="text-muted mb-0">
+      <div className="nfce-public-page container py-5 text-center px-3">
+        <p className="nfce-empty-state mb-0">
           Use o link do estabelecimento. Ex.: <code>/pontos-nota?tenant=slug-da-loja</code>
         </p>
-        <p className="text-muted small mt-2 mb-0">
-          <Link to="/cadastro" className="text-primary">
-            Cadastro no programa
-          </Link>
+        <p className="nfce-empty-state mt-2 mb-0">
+          <Link to="/cadastro">Cadastro no programa</Link>
         </p>
       </div>
     )
   }
 
   return (
-    <div className="container py-4 px-3" style={{ maxWidth: 520 }}>
-      <h1 className="h4 mb-2">Pontos pela nota (NFC-e)</h1>
-      <p className="text-muted small mb-2">
-        Piloto <strong>Paraná</strong>: informe o CPF cadastrado e use só a <strong>câmera traseira</strong> para ler o{" "}
-        <strong>QR code da nota</strong> (impresso no papel). O valor vem da consulta da SEFAZ. Cada nota vale uma vez.
-      </p>
-      <p className="text-muted small mb-4">
-        <strong>Dica:</strong> apontar a câmera para uma imagem na tela do computador costuma não ler o código; filme o QR na
-        nota física ou em outro celular. Segure firme, com boa luz e o QR inteiro visível na área marcada.
+    <div className="nfce-public-page container py-4 px-3" style={{ maxWidth: 520 }}>
+      <h1 className="nfce-title">Pontos pela nota (NFC-e)</h1>
+      <p className="nfce-intro mb-4">
+        Informe o CPF cadastrado e use só a <strong>câmera traseira</strong> para ler o <strong>QR code da nota</strong>{" "}
+        (impresso no papel). O valor vem da consulta da SEFAZ. Cada nota vale uma vez.
       </p>
 
       <form onSubmit={handleSubmit}>
@@ -252,7 +246,7 @@ export default function PublicNfcePoints() {
               </button>
               {cameraOn && (
                 <div className="mb-3">
-                  <p className="small text-muted mb-1">
+                  <p className="nfce-hint mb-1">
                     Enquadre o QR dentro da moldura; a câmera usada é a de trás. O leitor foi ajustado para QR codes longos
                     (NFC-e).
                   </p>
@@ -292,7 +286,7 @@ export default function PublicNfcePoints() {
         </button>
       </form>
 
-      <p className="text-muted small mt-4 mb-0">
+      <p className="nfce-footer-links mt-4 mb-0">
         <Link to={`/resgatar?tenant=${encodeURIComponent(tenantSlug)}`}>Ver saldo e resgates</Link>
         {" · "}
         <Link to={`/cadastro?tenant=${encodeURIComponent(tenantSlug)}`}>Cadastro</Link>

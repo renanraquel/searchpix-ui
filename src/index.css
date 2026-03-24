@@ -24,3 +24,60 @@ a {
 button:not([class*='btn']) {
   font-family: inherit;
 }
+
+/* Página pública NFC-e: contraste e tamanho para leitura no celular */
+.nfce-public-page .nfce-title {
+  color: #111827;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 576px) {
+  .nfce-public-page .nfce-title {
+    font-size: 1.5rem;
+  }
+}
+
+.nfce-public-page .nfce-intro {
+  color: #1f2937;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.nfce-public-page .nfce-hint {
+  color: #374151;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  margin-bottom: 0.35rem;
+}
+
+.nfce-public-page .form-group > label {
+  color: #111827;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.nfce-public-page .nfce-footer-links {
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.nfce-public-page .nfce-footer-links a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.nfce-public-page .nfce-empty-state {
+  color: #374151;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.nfce-public-page .nfce-empty-state a {
+  color: #2563eb;
+  font-weight: 600;
+}
