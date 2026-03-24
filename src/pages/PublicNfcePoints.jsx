@@ -1,15 +1,37 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { Link, useSearchParams } from "react-router-dom"
-import { Html5Qrcode } from "html5-qrcode"
+import QrScanner from "qr-scanner"
 import { apiUrl } from "../api"
 
-const READER_ELEMENT_ID = "nfce-qr-reader"
+/** QR de NFC-e é denso e longo; o BarcodeDetector do navegador costuma falhar onde a câmera nativa acerta. Forçar o worker jsQR do qr-scanner. */
+function forceWorkerQrEngineOnly() {
+  QrScanner["_disableBarcodeDetector"] = true
+}
 
 function maskCPF(v) {
   const n = String(v).replace(/\D/g, "").slice(0, 11)
   return n.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, (_, a, b, c, d) =>
     [a, b, c].filter(Boolean).join(".") + (d ? `-${d}` : "")
   )
+}
+
+/** Região = quadro quase inteiro (nota costuma ter o QR fora do centro); downscale mantém performance. */
+function calculateNfceScanRegion(video) {
+  const vw = video.videoWidth
+  const vh = video.videoHeight
+  if (!vw || !vh) {
+    return { x: 0, y: 0, width: 640, height: 480, downScaledWidth: 400, downScaledHeight: 400 }
+  }
+  const margin = 0.06
+  const w = Math.round(vw * (1 - 2 * margin))
+  const h = Math.round(vh * (1 - 2 * margin))
+  const x = Math.round((vw - w) / 2)
+  const y = Math.round((vh - h) / 2)
+  const maxEdge = 1024
+  const scale = Math.min(1, maxEdge / Math.max(w, h))
+  const dw = Math.max(320, Math.round(w * scale))
+  const dh = Math.max(320, Math.round(h * scale))
+  return { x, y, width: w, height: h, downScaledWidth: dw, downScaledHeight: dh }
 }
 
 export default function PublicNfcePoints() {
@@ -23,18 +45,19 @@ export default function PublicNfcePoints() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(null)
   const scannerRef = useRef(null)
+  const videoRef = useRef(null)
 
-  const stopScanner = useCallback(async () => {
+  const stopScanner = useCallback(() => {
     const instance = scannerRef.current
     scannerRef.current = null
     if (instance) {
       try {
-        if (instance.isScanning) await instance.stop()
+        instance.stop()
       } catch {
         /* ignore */
       }
       try {
-        instance.clear()
+        instance.destroy()
       } catch {
         /* ignore */
       }
@@ -45,7 +68,7 @@ export default function PublicNfcePoints() {
 
   useEffect(() => {
     return () => {
-      void stopScanner()
+      stopScanner()
     }
   }, [stopScanner])
 
@@ -55,34 +78,45 @@ export default function PublicNfcePoints() {
     if (scannerRef.current || startingCamera) return
     setCameraOn(true)
     setStartingCamera(true)
-    await new Promise((resolve) => requestAnimationFrame(() => resolve()))
-    const html5 = new Html5Qrcode(READER_ELEMENT_ID, {
-      verbose: false,
-      useBarCodeDetectorIfSupported: true,
-    })
-    scannerRef.current = html5
+    await new Promise((r) => requestAnimationFrame(r))
+    await new Promise((r) => requestAnimationFrame(r))
+    const video = videoRef.current
+    if (!video) {
+      setStartingCamera(false)
+      setCameraOn(false)
+      setError("Não foi possível preparar o vídeo. Tente de novo.")
+      return
+    }
+    forceWorkerQrEngineOnly()
+    const scanner = new QrScanner(
+      video,
+      (result) => {
+        const text = typeof result === "string" ? result : result.data
+        setQrPayload(String(text).trim())
+        stopScanner()
+      },
+      {
+        returnDetailedScanResult: true,
+        preferredCamera: "environment",
+        highlightScanRegion: true,
+        highlightCodeOutline: true,
+        maxScansPerSecond: 15,
+        calculateScanRegion: calculateNfceScanRegion,
+        onDecodeError: () => {},
+      }
+    )
     try {
-      await html5.start(
-        { facingMode: "environment" },
-        {
-          fps: 12,
-          qrbox: (viewfinderWidth, viewfinderHeight) => {
-            const edge = Math.min(viewfinderWidth, viewfinderHeight)
-            const size = Math.max(200, Math.floor(edge * 0.88))
-            return { width: size, height: size }
-          },
-          aspectRatio: 1,
-        },
-        (decodedText) => {
-          setQrPayload(String(decodedText).trim())
-          void stopScanner()
-        },
-        () => {}
-      )
+      scanner.setInversionMode("both")
+    } catch {
+      /* ignore */
+    }
+    scannerRef.current = scanner
+    try {
+      await scanner.start()
     } catch (err) {
       scannerRef.current = null
       try {
-        html5.clear()
+        scanner.destroy()
       } catch {
         /* ignore */
       }
@@ -175,7 +209,7 @@ export default function PublicNfcePoints() {
       </p>
       <p className="text-muted small mb-4">
         <strong>Dica:</strong> apontar a câmera para uma imagem na tela do computador costuma não ler o código; filme o QR na
-        nota física ou em outro celular.
+        nota física ou em outro celular. Segure firme, com boa luz e o QR inteiro visível na área marcada.
       </p>
 
       <form onSubmit={handleSubmit}>
@@ -218,12 +252,22 @@ export default function PublicNfcePoints() {
               </button>
               {cameraOn && (
                 <div className="mb-3">
-                  <p className="small text-muted mb-1">Enquadre o QR code no centro; a câmera usada é a de trás.</p>
+                  <p className="small text-muted mb-1">
+                    Enquadre o QR dentro da moldura; a câmera usada é a de trás. O leitor foi ajustado para QR codes longos
+                    (NFC-e).
+                  </p>
                   <div
-                    id={READER_ELEMENT_ID}
-                    className="rounded overflow-hidden"
-                    style={{ maxWidth: "100%", minHeight: startingCamera ? 200 : undefined }}
-                  />
+                    className="rounded overflow-hidden bg-dark position-relative"
+                    style={{ maxWidth: "100%", lineHeight: 0 }}
+                  >
+                    <video
+                      ref={videoRef}
+                      className="w-100"
+                      style={{ display: "block", minHeight: 220, objectFit: "cover" }}
+                      muted
+                      playsInline
+                    />
+                  </div>
                 </div>
               )}
             </>
