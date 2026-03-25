@@ -1,5 +1,18 @@
 import { useState, useEffect, useRef } from "react"
-import { fetchApi } from "../api"
+import { fetchApi, getTenant, getToken, setAuth } from "../api"
+
+function onlyDigits(s) {
+  return String(s).replace(/\D/g, "")
+}
+
+function maskCNPJInput(v) {
+  const n = onlyDigits(v).slice(0, 14)
+  if (n.length <= 2) return n
+  if (n.length <= 5) return `${n.slice(0, 2)}.${n.slice(2)}`
+  if (n.length <= 8) return `${n.slice(0, 2)}.${n.slice(2, 5)}.${n.slice(5)}`
+  if (n.length <= 12) return `${n.slice(0, 2)}.${n.slice(2, 5)}.${n.slice(5, 8)}/${n.slice(8)}`
+  return `${n.slice(0, 2)}.${n.slice(2, 5)}.${n.slice(5, 8)}/${n.slice(8, 12)}-${n.slice(12)}`
+}
 
 function maskCPF(v) {
   const n = String(v).replace(/\D/g, "").slice(0, 11)
@@ -51,6 +64,16 @@ export default function Points() {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const inputRef = useRef(null)
   const dropdownRef = useRef(null)
+
+  const [nfceCnpjInput, setNfceCnpjInput] = useState("")
+  const [nfceSaving, setNfceSaving] = useState(false)
+  const [nfceMsg, setNfceMsg] = useState({ type: "", text: "" })
+
+  useEffect(() => {
+    const t = getTenant()
+    const raw = t?.nfce_emitter_cnpj || t?.NfceEmitterCNPJ || ""
+    setNfceCnpjInput(raw ? maskCNPJInput(raw) : "")
+  }, [])
 
   const rawCpf = searchInput.replace(/\D/g, "")
   const hasLetters = /[a-zA-ZÀ-ÿ]/.test(searchInput)
@@ -146,6 +169,37 @@ export default function Points() {
     inputRef.current?.focus()
   }
 
+  async function saveNfceEmitterCNPJ(e) {
+    e.preventDefault()
+    const d = onlyDigits(nfceCnpjInput)
+    if (d.length !== 14) {
+      setNfceMsg({ type: "error", text: "Informe o CNPJ completo (14 dígitos) que aparece como emitente na NFC-e." })
+      return
+    }
+    setNfceSaving(true)
+    setNfceMsg({ type: "", text: "" })
+    try {
+      const res = await fetchApi("/api/tenants/nfce-emitter-cnpj", {
+        method: "POST",
+        body: JSON.stringify({ nfce_emitter_cnpj: d }),
+      })
+      const text = await res.text()
+      if (!res.ok) throw new Error(text || res.statusText)
+      const data = JSON.parse(text)
+      const tok = getToken()
+      if (tok && data.tenant) setAuth(tok, data.tenant)
+      setNfceCnpjInput(maskCNPJInput(data.tenant?.nfce_emitter_cnpj || d))
+      setNfceMsg({
+        type: "success",
+        text: data.message || "CNPJ salvo. Só notas emitidas com esse CNPJ pontuarão pelo link público.",
+      })
+    } catch (err) {
+      setNfceMsg({ type: "error", text: err.message || "Erro ao salvar." })
+    } finally {
+      setNfceSaving(false)
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     if (!customer) {
@@ -189,6 +243,44 @@ export default function Points() {
         <div className="page-header">
           <h3 className="page-title">Lançar pontos</h3>
         </div>
+
+        <div className="card border-primary mb-4">
+          <div className="card-body">
+            <h5 className="card-title">Pontos pela NFC-e (link público)</h5>
+            <p className="text-dark mb-3" style={{ fontSize: "0.95rem", lineHeight: 1.5 }}>
+              Cadastre o <strong>CNPJ do emitente</strong> que sai na sua nota (o mesmo da chave de acesso). Assim, só notas{" "}
+              <strong>emitidas por este estabelecimento</strong> geram pontos; notas de outros CNPJs são recusadas.
+            </p>
+            <form onSubmit={saveNfceEmitterCNPJ} className="mb-0">
+              <div className="form-group mb-2">
+                <label htmlFor="nfce-emitter-cnpj">CNPJ emissor da NFC-e</label>
+                <input
+                  id="nfce-emitter-cnpj"
+                  type="text"
+                  className="form-control"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  placeholder="00.000.000/0001-00"
+                  value={nfceCnpjInput}
+                  onChange={(e) => setNfceCnpjInput(maskCNPJInput(e.target.value))}
+                  maxLength={18}
+                />
+              </div>
+              {nfceMsg.text && (
+                <div
+                  className={`cp-alert mb-2 ${nfceMsg.type === "error" ? "cp-alert-danger" : "cp-alert-success"}`}
+                  role="alert"
+                >
+                  {nfceMsg.text}
+                </div>
+              )}
+              <button type="submit" className="btn btn-outline-primary" disabled={nfceSaving}>
+                {nfceSaving ? "Salvando…" : "Salvar CNPJ"}
+              </button>
+            </form>
+          </div>
+        </div>
+
         <p className="text-muted mb-4">
           <strong>Regra de pontuação:</strong> a cada R$ 5,00 em compras você ganha 1 ponto, sempre arredondando para cima.
           Ex.: R$ 7,00 / 8,00 / 9,00 = 2 pontos. Busque o cliente por <strong>CPF</strong> ou pelo <strong>nome</strong> e informe o valor da compra.
