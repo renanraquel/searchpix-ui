@@ -60,15 +60,43 @@ button:not([class*='btn']) {
 }
 
 .nfce-public-page .nfce-footer-links {
-  color: #374151;
-  font-size: 0.95rem;
+  color: #1f2937;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
-.nfce-public-page .nfce-footer-links a {
-  color: #2563eb;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+.nfce-public-page .nfce-footer-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.55rem;
+}
+
+.nfce-public-page .nfce-footer-action {
+  display: block;
+  width: 100%;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 0.5rem;
+  color: #1d4ed8;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.35;
+  padding: 0.7rem 0.85rem;
+  text-align: center;
+  text-decoration: none;
+}
+
+.nfce-public-page .nfce-footer-action:hover,
+.nfce-public-page .nfce-footer-action:focus {
+  background: #e0e7ff;
+  border-color: #93c5fd;
+  color: #1e40af;
+}
+
+@media (min-width: 576px) {
+  .nfce-public-page .nfce-footer-actions {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .nfce-public-page .nfce-empty-state {

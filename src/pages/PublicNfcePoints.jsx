@@ -317,11 +317,17 @@ export default function PublicNfcePoints() {
         </button>
       </form>
 
-      <p className="nfce-footer-links mt-4 mb-0">
-        <Link to={`/resgatar?tenant=${encodeURIComponent(tenantSlug)}`}>Ver saldo e resgates</Link>
-        {" · "}
-        <Link to={`/cadastro?tenant=${encodeURIComponent(tenantSlug)}`}>Cadastro</Link>
-      </p>
+      <div className="nfce-footer-links mt-4">
+        <p className="mb-2">Acessos rápidos</p>
+        <div className="nfce-footer-actions">
+          <Link className="nfce-footer-action" to={`/resgatar?tenant=${encodeURIComponent(tenantSlug)}`}>
+            Ver saldo e resgates
+          </Link>
+          <Link className="nfce-footer-action" to={`/cadastro?tenant=${encodeURIComponent(tenantSlug)}`}>
+            Cadastro
+          </Link>
+        </div>
+      </div>
     </div>
   )
 }
