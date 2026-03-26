@@ -59,6 +59,7 @@ function calculateNfceScanRegion(video) {
 export default function PublicNfcePoints() {
   const [searchParams] = useSearchParams()
   const tenantSlug = searchParams.get("tenant") || ""
+  const [backgroundUrl, setBackgroundUrl] = useState(null)
   const [cpf, setCpf] = useState("")
   const [qrPayload, setQrPayload] = useState("")
   const [cameraOn, setCameraOn] = useState(false)
@@ -68,6 +69,30 @@ export default function PublicNfcePoints() {
   const [success, setSuccess] = useState(null)
   const scannerRef = useRef(null)
   const videoRef = useRef(null)
+
+  useEffect(() => {
+    if (!tenantSlug) {
+      setBackgroundUrl(null)
+      return
+    }
+    let cancelled = false
+    async function loadTenantBackground() {
+      try {
+        const res = await fetch(`${apiUrl("/api/public/redemption")}?tenant=${encodeURIComponent(tenantSlug)}`)
+        if (!res.ok) return
+        const data = await res.json()
+        if (cancelled) return
+        const bg = data?.tenant?.background_image_url
+        setBackgroundUrl(bg ? apiUrl(bg) : null)
+      } catch {
+        if (!cancelled) setBackgroundUrl(null)
+      }
+    }
+    loadTenantBackground()
+    return () => {
+      cancelled = true
+    }
+  }, [tenantSlug])
 
   const stopScanner = useCallback(() => {
     const instance = scannerRef.current
@@ -230,14 +255,43 @@ export default function PublicNfcePoints() {
   }
 
   return (
-    <div className="nfce-public-page container py-4 px-3" style={{ maxWidth: 520 }}>
-      <h1 className="nfce-title">Pontos pela nota (NFC-e)</h1>
-      <p className="nfce-intro mb-4">
-        Informe o CPF cadastrado e use só a <strong>câmera traseira</strong> para ler o <strong>QR code da nota</strong>{" "}
-        (impresso no papel). O valor vem da consulta da SEFAZ. Cada nota vale uma vez.
-      </p>
+    <div
+      style={{
+        minHeight: "100vh",
+        backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : "none",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      <div
+        className="d-flex justify-content-center align-items-start py-4 px-3"
+        style={{
+          minHeight: "100vh",
+          backgroundColor: backgroundUrl ? "rgba(0,0,0,0.45)" : "transparent",
+          boxSizing: "border-box",
+          width: "100%",
+          overflowX: "hidden",
+        }}
+      >
+        <div
+          className="nfce-public-page card shadow border-0 my-3"
+          style={{
+            width: "100%",
+            maxWidth: 520,
+            backgroundColor: "rgba(255,255,255,0.96)",
+            boxSizing: "border-box",
+            overflow: "hidden",
+          }}
+        >
+          <div className="card-body p-3 p-md-4">
+            <h1 className="nfce-title">Pontos pela nota (NFC-e)</h1>
+            <p className="nfce-intro mb-4">
+              Informe o CPF cadastrado e use só a <strong>câmera traseira</strong> para ler o <strong>QR code da nota</strong>{" "}
+              (impresso no papel). O valor vem da consulta da SEFAZ. Cada nota vale uma vez.
+            </p>
 
-      <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="nfce-cpf">CPF (cadastrado no programa)</label>
           <input
@@ -315,17 +369,20 @@ export default function PublicNfcePoints() {
         <button type="submit" className="btn btn-primary btn-block" disabled={loading || !qrPayload.trim()}>
           {loading ? "Enviando…" : "Acumular pontos"}
         </button>
-      </form>
+            </form>
 
-      <div className="nfce-footer-links mt-4">
-        <p className="mb-2">Acessos rápidos</p>
-        <div className="nfce-footer-actions">
-          <Link className="nfce-footer-action" to={`/resgatar?tenant=${encodeURIComponent(tenantSlug)}`}>
-            Ver saldo e resgates
-          </Link>
-          <Link className="nfce-footer-action" to={`/cadastro?tenant=${encodeURIComponent(tenantSlug)}`}>
-            Cadastro
-          </Link>
+            <div className="nfce-footer-links mt-4">
+              <p className="mb-2">Acessos rápidos</p>
+              <div className="nfce-footer-actions">
+                <Link className="nfce-footer-action" to={`/resgatar?tenant=${encodeURIComponent(tenantSlug)}`}>
+                  Ver saldo e resgates
+                </Link>
+                <Link className="nfce-footer-action" to={`/cadastro?tenant=${encodeURIComponent(tenantSlug)}`}>
+                  Cadastro
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
