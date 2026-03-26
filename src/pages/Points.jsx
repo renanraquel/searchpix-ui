@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { fetchApi, getTenant, getToken, setAuth } from "../api"
+import { fetchApi, getTenant } from "../api"
 
 function onlyDigits(s) {
   return String(s).replace(/\D/g, "")
@@ -66,13 +66,28 @@ export default function Points() {
   const dropdownRef = useRef(null)
 
   const [nfceCnpjInput, setNfceCnpjInput] = useState("")
+  const [nfceEmitters, setNfceEmitters] = useState([])
   const [nfceSaving, setNfceSaving] = useState(false)
   const [nfceMsg, setNfceMsg] = useState({ type: "", text: "" })
 
   useEffect(() => {
     const t = getTenant()
     const raw = t?.nfce_emitter_cnpj || t?.NfceEmitterCNPJ || ""
-    setNfceCnpjInput(raw ? maskCNPJInput(raw) : "")
+    if (raw) setNfceEmitters([raw])
+  }, [])
+
+  useEffect(() => {
+    async function loadEmitters() {
+      try {
+        const res = await fetchApi("/api/tenants/nfce-emitters")
+        if (!res.ok) return
+        const data = await res.json()
+        setNfceEmitters(Array.isArray(data.emitters) ? data.emitters : [])
+      } catch {
+        // ignore
+      }
+    }
+    loadEmitters()
   }, [])
 
   const rawCpf = searchInput.replace(/\D/g, "")
@@ -179,22 +194,42 @@ export default function Points() {
     setNfceSaving(true)
     setNfceMsg({ type: "", text: "" })
     try {
-      const res = await fetchApi("/api/tenants/nfce-emitter-cnpj", {
+      const res = await fetchApi("/api/tenants/nfce-emitters", {
         method: "POST",
         body: JSON.stringify({ nfce_emitter_cnpj: d }),
       })
       const text = await res.text()
       if (!res.ok) throw new Error(text || res.statusText)
       const data = JSON.parse(text)
-      const tok = getToken()
-      if (tok && data.tenant) setAuth(tok, data.tenant)
-      setNfceCnpjInput(maskCNPJInput(data.tenant?.nfce_emitter_cnpj || d))
+      const emitters = Array.isArray(data.emitters) ? data.emitters : []
+      setNfceEmitters(emitters)
+      setNfceCnpjInput("")
       setNfceMsg({
         type: "success",
-        text: data.message || "CNPJ salvo. Só notas emitidas com esse CNPJ pontuarão pelo link público.",
+        text: data.message || "CNPJ adicionado. Só notas emitidas por CNPJs cadastrados pontuarão pelo link público.",
       })
     } catch (err) {
       setNfceMsg({ type: "error", text: err.message || "Erro ao salvar." })
+    } finally {
+      setNfceSaving(false)
+    }
+  }
+
+  async function removeNfceEmitter(cnpj) {
+    setNfceSaving(true)
+    setNfceMsg({ type: "", text: "" })
+    try {
+      const res = await fetchApi("/api/tenants/nfce-emitters", {
+        method: "DELETE",
+        body: JSON.stringify({ nfce_emitter_cnpj: cnpj }),
+      })
+      const text = await res.text()
+      if (!res.ok) throw new Error(text || res.statusText)
+      const data = JSON.parse(text)
+      setNfceEmitters(Array.isArray(data.emitters) ? data.emitters : [])
+      setNfceMsg({ type: "success", text: data.message || "CNPJ removido." })
+    } catch (err) {
+      setNfceMsg({ type: "error", text: err.message || "Erro ao remover." })
     } finally {
       setNfceSaving(false)
     }
@@ -248,8 +283,8 @@ export default function Points() {
           <div className="card-body">
             <h5 className="card-title">Pontos pela NFC-e (link público)</h5>
             <p className="text-dark mb-3" style={{ fontSize: "0.95rem", lineHeight: 1.5 }}>
-              Cadastre o <strong>CNPJ do emitente</strong> que sai na sua nota (o mesmo da chave de acesso). Assim, só notas{" "}
-              <strong>emitidas por este estabelecimento</strong> geram pontos; notas de outros CNPJs são recusadas.
+              Cadastre <strong>um ou mais CNPJs emitentes</strong> das suas notas (os mesmos que aparecem na chave de acesso).
+              Assim, só notas emitidas por CNPJs desta lista geram pontos; notas de outros CNPJs são recusadas.
             </p>
             <form onSubmit={saveNfceEmitterCNPJ} className="mb-0">
               <div className="form-group mb-2">
@@ -274,8 +309,30 @@ export default function Points() {
                   {nfceMsg.text}
                 </div>
               )}
+              {nfceEmitters.length > 0 && (
+                <div className="mb-2">
+                  <small className="text-muted d-block mb-1">CNPJs cadastrados:</small>
+                  <div className="d-flex flex-wrap">
+                    {nfceEmitters.map((cnpj) => (
+                      <span key={cnpj} className="badge badge-primary mr-2 mb-2 px-2 py-1" style={{ fontSize: "0.82rem" }}>
+                        {maskCNPJInput(cnpj)}
+                        <button
+                          type="button"
+                          className="btn btn-link text-white p-0 ml-2"
+                          style={{ lineHeight: 1, fontSize: "0.85rem", verticalAlign: "baseline" }}
+                          onClick={() => removeNfceEmitter(cnpj)}
+                          disabled={nfceSaving}
+                          aria-label={`Remover CNPJ ${maskCNPJInput(cnpj)}`}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               <button type="submit" className="btn btn-outline-primary" disabled={nfceSaving}>
-                {nfceSaving ? "Salvando…" : "Salvar CNPJ"}
+                {nfceSaving ? "Salvando…" : "Adicionar CNPJ"}
               </button>
             </form>
           </div>
