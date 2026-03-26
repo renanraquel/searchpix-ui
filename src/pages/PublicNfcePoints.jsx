@@ -15,6 +15,28 @@ function maskCPF(v) {
   )
 }
 
+function looksLikeNfcePayload(raw) {
+  const s = String(raw || "").trim()
+  if (!s) return false
+
+  const directDigits = s.replace(/\D/g, "")
+  if (directDigits.length === 44) return true
+
+  try {
+    const urlText = s.includes("://") ? s : `https://${s}`
+    const u = new URL(urlText)
+    const p = decodeURIComponent(u.searchParams.get("p") || "")
+    if (p) {
+      const firstPart = (p.split("|")[0] || "").replace(/\D/g, "")
+      if (firstPart.length === 44) return true
+    }
+  } catch {
+    // ignore parse errors
+  }
+
+  return /fazenda\.pr\.gov\.br\/nfce/i.test(s)
+}
+
 /** Região = quadro quase inteiro (nota costuma ter o QR fora do centro); downscale mantém performance. */
 function calculateNfceScanRegion(video) {
   const vw = video.videoWidth
@@ -91,8 +113,17 @@ export default function PublicNfcePoints() {
     const scanner = new QrScanner(
       video,
       (result) => {
-        const text = typeof result === "string" ? result : result.data
-        setQrPayload(String(text).trim())
+        const text = String(typeof result === "string" ? result : result?.data || "").trim()
+        if (!text) {
+          setError("A leitura retornou vazia. Tente aproximar/afastar um pouco e manter boa iluminação.")
+          return
+        }
+        if (!looksLikeNfcePayload(text)) {
+          setError("O código lido não parece ser o QR da NFC-e. Tente enquadrar somente o QR da nota fiscal.")
+          return
+        }
+        setError("")
+        setQrPayload(text)
         stopScanner()
       },
       {
