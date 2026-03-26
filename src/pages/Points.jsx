@@ -309,28 +309,36 @@ export default function Points() {
                   {nfceMsg.text}
                 </div>
               )}
-              {nfceEmitters.length > 0 && (
-                <div className="mb-2">
-                  <small className="text-muted d-block mb-1">CNPJs cadastrados:</small>
-                  <div className="d-flex flex-wrap">
+              <div className="mb-3">
+                <div className="d-flex justify-content-between align-items-center mb-1">
+                  <small className="text-dark font-weight-bold">CNPJs cadastrados para validar notas</small>
+                  <small className="text-muted">{nfceEmitters.length} cadastrado(s)</small>
+                </div>
+                {nfceEmitters.length === 0 ? (
+                  <div className="border rounded p-2 bg-light">
+                    <small className="text-muted mb-0 d-block">
+                      Nenhum CNPJ cadastrado ainda. Adicione pelo menos 1 para ativar a pontuação por NFC-e.
+                    </small>
+                  </div>
+                ) : (
+                  <ul className="list-group">
                     {nfceEmitters.map((cnpj) => (
-                      <span key={cnpj} className="badge badge-primary mr-2 mb-2 px-2 py-1" style={{ fontSize: "0.82rem" }}>
-                        {maskCNPJInput(cnpj)}
+                      <li key={cnpj} className="list-group-item d-flex justify-content-between align-items-center py-2">
+                        <span className="font-weight-bold text-dark">{maskCNPJInput(cnpj)}</span>
                         <button
                           type="button"
-                          className="btn btn-link text-white p-0 ml-2"
-                          style={{ lineHeight: 1, fontSize: "0.85rem", verticalAlign: "baseline" }}
+                          className="btn btn-sm btn-outline-danger"
                           onClick={() => removeNfceEmitter(cnpj)}
                           disabled={nfceSaving}
                           aria-label={`Remover CNPJ ${maskCNPJInput(cnpj)}`}
                         >
-                          ×
+                          Remover
                         </button>
-                      </span>
+                      </li>
                     ))}
-                  </div>
-                </div>
-              )}
+                  </ul>
+                )}
+              </div>
               <button type="submit" className="btn btn-outline-primary" disabled={nfceSaving}>
                 {nfceSaving ? "Salvando…" : "Adicionar CNPJ"}
               </button>
