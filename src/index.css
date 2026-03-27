@@ -109,3 +109,41 @@ button:not([class*='btn']) {
   color: #2563eb;
   font-weight: 600;
 }
+
+/* Tela pública de resgate: destaque do atalho para NFC-e */
+.pr-public-quick-actions {
+  color: #1f2937;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.pr-public-quick-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.55rem;
+}
+
+.pr-public-quick-action {
+  display: block;
+  width: 100%;
+  border-radius: 0.5rem;
+  padding: 0.75rem 0.9rem;
+  text-align: center;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.pr-public-quick-action-primary {
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  color: #1d4ed8;
+}
+
+.pr-public-quick-action-primary:hover,
+.pr-public-quick-action-primary:focus {
+  background: #e0e7ff;
+  border-color: #93c5fd;
+  color: #1e40af;
+}
