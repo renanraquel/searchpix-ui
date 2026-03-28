@@ -88,6 +88,33 @@ export default function PublicRedemption() {
 
   const activePtsSafe = activePoints ?? groupedProducts.pointKeys[0] ?? null
 
+  /** Próximo degrau de pontos entre produtos; barra = saldo / próximo alvo. */
+  const redemptionProgress = useMemo(() => {
+    const keys = groupedProducts.pointKeys
+    const balance = Number(data?.customer?.points_balance ?? 0)
+    if (!data?.customer || keys.length === 0) return null
+    const nextTarget = keys.find((k) => balance < k)
+    if (nextTarget == null) {
+      return {
+        percent: 100,
+        nextTarget: null,
+        remaining: 0,
+        caption: "Você já pode resgatar em todos os níveis de pontos disponíveis.",
+      }
+    }
+    const pct = Math.min(100, Math.max(0, (balance / nextTarget) * 100))
+    const remaining = Math.max(0, nextTarget - balance)
+    return {
+      percent: pct,
+      nextTarget,
+      remaining,
+      caption:
+        remaining === 0
+          ? `Você atingiu ${nextTarget} pts — confira os prêmios deste nível.`
+          : `Faltam ${remaining} pts para o nível de ${nextTarget} pontos`,
+    }
+  }, [data?.customer, groupedProducts.pointKeys])
+
   useEffect(() => {
     if (!data?.customer) return
     if (groupedProducts.pointKeys.length === 0) {
@@ -194,10 +221,31 @@ export default function PublicRedemption() {
                       {data.customer.name}
                     </div>
                     <div className="text-muted small font-weight-bold mb-1">Seus pontos</div>
-                    <div className="h3 font-weight-bold text-primary mb-0">
+                    <div className="h3 font-weight-bold text-primary mb-3">
                       {data.customer.points_balance ?? 0}{" "}
                       <span className="h5 font-weight-bold">pts</span>
                     </div>
+                    {redemptionProgress ? (
+                      <div className="pt-1">
+                        <div
+                          className="progress rounded-pill"
+                          style={{ height: "0.65rem" }}
+                          role="progressbar"
+                          aria-valuenow={Math.round(redemptionProgress.percent)}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-label="Progresso até o próximo nível de resgate"
+                        >
+                          <div
+                            className="progress-bar bg-primary"
+                            style={{ width: `${redemptionProgress.percent}%` }}
+                          />
+                        </div>
+                        <p className="text-muted small mb-0 mt-2" style={{ lineHeight: 1.35 }}>
+                          {redemptionProgress.caption}
+                        </p>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
 
