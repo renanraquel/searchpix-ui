@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
-import { Link, useSearchParams } from "react-router-dom"
+import { useSearchParams } from "react-router-dom"
 import { apiUrl } from "../api"
+import { PublicProgramFooterBootstrap } from "../components/public/PublicProgramFooter"
 
 function maskCPF(v) {
   const n = String(v).replace(/\D/g, "").slice(0, 11)
@@ -238,11 +239,7 @@ export default function PublicRegister() {
               </form>
             )}
 
-            <div className="mt-4 pt-3 border-top text-center small">
-              <Link to={`/resgatar?tenant=${encodeURIComponent(tenantSlug)}`} className="text-primary d-block">
-                Já sou cadastrado — ver pontos e resgates
-              </Link>
-            </div>
+            <PublicProgramFooterBootstrap tenantSlug={tenantSlug} />
           </div>
         </div>
       </div>

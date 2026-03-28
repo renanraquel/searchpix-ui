@@ -1,388 +1,204 @@
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { Link, useSearchParams } from "react-router-dom"
-import QrScanner from "qr-scanner"
+import { User, Receipt, Gift, Sparkles } from "lucide-react"
 import { apiUrl } from "../api"
+import LoyaltyStepCard from "../components/pontos-nota/LoyaltyStepCard"
+import "../styles/tailwind-pontos-nota.css"
 
-/** QR de NFC-e é denso e longo; o BarcodeDetector do navegador costuma falhar onde a câmera nativa acerta. Forçar o worker jsQR do qr-scanner. */
-function forceWorkerQrEngineOnly() {
-  QrScanner["_disableBarcodeDetector"] = true
-}
+const BENEFITS = [
+  { emoji: "💰", text: "A cada real gasto, você ganha pontos" },
+  { emoji: "🎯", text: "Quanto mais comprar, mais acumula" },
+  { emoji: "🔥", text: "Sem custo para participar" },
+]
 
-function maskCPF(v) {
-  const n = String(v).replace(/\D/g, "").slice(0, 11)
-  return n.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, (_, a, b, c, d) =>
-    [a, b, c].filter(Boolean).join(".") + (d ? `-${d}` : "")
-  )
-}
-
-function looksLikeNfcePayload(raw) {
-  const s = String(raw || "").trim()
-  if (!s) return false
-
-  const directDigits = s.replace(/\D/g, "")
-  if (directDigits.length === 44) return true
-
-  try {
-    const urlText = s.includes("://") ? s : `https://${s}`
-    const u = new URL(urlText)
-    const p = decodeURIComponent(u.searchParams.get("p") || "")
-    if (p) {
-      const firstPart = (p.split("|")[0] || "").replace(/\D/g, "")
-      if (firstPart.length === 44) return true
-    }
-  } catch {
-    // ignore parse errors
-  }
-
-  return /fazenda\.pr\.gov\.br\/nfce/i.test(s)
-}
-
-/** Região = quadro quase inteiro (nota costuma ter o QR fora do centro); downscale mantém performance. */
-function calculateNfceScanRegion(video) {
-  const vw = video.videoWidth
-  const vh = video.videoHeight
-  if (!vw || !vh) {
-    return { x: 0, y: 0, width: 640, height: 480, downScaledWidth: 400, downScaledHeight: 400 }
-  }
-  const margin = 0.06
-  const w = Math.round(vw * (1 - 2 * margin))
-  const h = Math.round(vh * (1 - 2 * margin))
-  const x = Math.round((vw - w) / 2)
-  const y = Math.round((vh - h) / 2)
-  const maxEdge = 1024
-  const scale = Math.min(1, maxEdge / Math.max(w, h))
-  const dw = Math.max(320, Math.round(w * scale))
-  const dh = Math.max(320, Math.round(h * scale))
-  return { x, y, width: w, height: h, downScaledWidth: dw, downScaledHeight: dh }
+/** Ex.: ibimassas → Ibimassas; padaria-do-ze → Padaria Do Ze */
+function titleCaseFromSlug(slug) {
+  if (!slug) return ""
+  return slug
+    .split(/[-_]/)
+    .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : ""))
+    .filter(Boolean)
+    .join(" ")
 }
 
 export default function PublicNfcePoints() {
   const [searchParams] = useSearchParams()
   const tenantSlug = searchParams.get("tenant") || ""
-  const [backgroundUrl, setBackgroundUrl] = useState(null)
-  const [cpf, setCpf] = useState("")
-  const [qrPayload, setQrPayload] = useState("")
-  const [cameraOn, setCameraOn] = useState(false)
-  const [startingCamera, setStartingCamera] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState(null)
-  const scannerRef = useRef(null)
-  const videoRef = useRef(null)
+  const [tenantBranding, setTenantBranding] = useState({ slug: null, name: "", backgroundUrl: null })
+
+  const cadastroPath = tenantSlug ? `/cadastro?tenant=${encodeURIComponent(tenantSlug)}` : "/cadastro"
+  const resgatarPath = tenantSlug ? `/resgatar?tenant=${encodeURIComponent(tenantSlug)}` : "/resgatar"
+  const enviarNotaPath = tenantSlug ? `/pontos-nota/enviar?tenant=${encodeURIComponent(tenantSlug)}` : "/pontos-nota/enviar"
 
   useEffect(() => {
-    if (!tenantSlug) {
-      setBackgroundUrl(null)
-      return
-    }
+    if (!tenantSlug) return
     let cancelled = false
-    async function loadTenantBackground() {
+    async function loadTenantBranding() {
       try {
         const res = await fetch(`${apiUrl("/api/public/redemption")}?tenant=${encodeURIComponent(tenantSlug)}`)
-        if (!res.ok) return
+        if (!res.ok) {
+          if (!cancelled) setTenantBranding({ slug: tenantSlug, name: "", backgroundUrl: null })
+          return
+        }
         const data = await res.json()
         if (cancelled) return
         const bg = data?.tenant?.background_image_url
-        setBackgroundUrl(bg ? apiUrl(bg) : null)
+        const name = (data?.tenant?.name || "").trim()
+        setTenantBranding({
+          slug: tenantSlug,
+          name,
+          backgroundUrl: bg ? apiUrl(bg) : null,
+        })
       } catch {
-        if (!cancelled) setBackgroundUrl(null)
+        if (!cancelled) setTenantBranding({ slug: tenantSlug, name: "", backgroundUrl: null })
       }
     }
-    loadTenantBackground()
+    loadTenantBranding()
     return () => {
       cancelled = true
     }
   }, [tenantSlug])
 
-  const stopScanner = useCallback(() => {
-    const instance = scannerRef.current
-    scannerRef.current = null
-    if (instance) {
-      try {
-        instance.stop()
-      } catch {
-        /* ignore */
-      }
-      try {
-        instance.destroy()
-      } catch {
-        /* ignore */
-      }
-    }
-    setCameraOn(false)
-    setStartingCamera(false)
-  }, [])
+  const brandingForSlug = tenantBranding.slug === tenantSlug ? tenantBranding : null
+  const displayBackgroundUrl = tenantSlug && brandingForSlug ? brandingForSlug.backgroundUrl : null
+  const loyaltyTenantLabel = (brandingForSlug?.name && brandingForSlug.name) || titleCaseFromSlug(tenantSlug)
+  const loyaltyBadgeText = loyaltyTenantLabel ? `Fidelidade ${loyaltyTenantLabel}` : "Fidelidade"
 
-  useEffect(() => {
-    return () => {
-      stopScanner()
-    }
-  }, [stopScanner])
-
-  async function startScanner() {
-    setError("")
-    setSuccess(null)
-    if (scannerRef.current || startingCamera) return
-    setCameraOn(true)
-    setStartingCamera(true)
-    await new Promise((r) => requestAnimationFrame(r))
-    await new Promise((r) => requestAnimationFrame(r))
-    const video = videoRef.current
-    if (!video) {
-      setStartingCamera(false)
-      setCameraOn(false)
-      setError("Não foi possível preparar o vídeo. Tente de novo.")
-      return
-    }
-    forceWorkerQrEngineOnly()
-    const scanner = new QrScanner(
-      video,
-      (result) => {
-        const text = String(typeof result === "string" ? result : result?.data || "").trim()
-        if (!text) {
-          setError("A leitura retornou vazia. Tente aproximar/afastar um pouco e manter boa iluminação.")
-          return
+  const shellStyle =
+    displayBackgroundUrl && tenantSlug
+      ? {
+          backgroundImage: `url(${displayBackgroundUrl})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
         }
-        if (!looksLikeNfcePayload(text)) {
-          setError("O código lido não parece ser o QR da NFC-e. Tente enquadrar somente o QR da nota fiscal.")
-          return
-        }
-        setError("")
-        setQrPayload(text)
-        stopScanner()
-      },
-      {
-        returnDetailedScanResult: true,
-        preferredCamera: "environment",
-        highlightScanRegion: true,
-        highlightCodeOutline: true,
-        maxScansPerSecond: 15,
-        calculateScanRegion: calculateNfceScanRegion,
-        onDecodeError: () => {},
-      }
-    )
-    try {
-      scanner.setInversionMode("both")
-    } catch {
-      /* ignore */
-    }
-    scannerRef.current = scanner
-    try {
-      await scanner.start()
-    } catch (err) {
-      scannerRef.current = null
-      try {
-        scanner.destroy()
-      } catch {
-        /* ignore */
-      }
-      setCameraOn(false)
-      const msg =
-        err && typeof err === "object" && "message" in err
-          ? String(err.message)
-          : String(err)
-      if (/NotFoundError|not found/i.test(msg) || /OverconstrainedError/i.test(msg)) {
-        setError(
-          "Não foi possível abrir a câmera traseira neste aparelho. Use um celular com câmera de trás e permita o acesso à câmera (site em HTTPS)."
-        )
-      } else if (/NotAllowedError|Permission/i.test(msg)) {
-        setError("Permissão da câmera negada. Permita o uso da câmera nas configurações do navegador.")
-      } else {
-        setError(
-          "Não foi possível iniciar a câmera. Confirme permissões, use HTTPS e, se estiver no computador, teste no celular."
-        )
-      }
-    } finally {
-      setStartingCamera(false)
-    }
-  }
-
-  function clearNota() {
-    setQrPayload("")
-    setSuccess(null)
-    setError("")
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    setError("")
-    setSuccess(null)
-    const raw = cpf.replace(/\D/g, "")
-    if (raw.length !== 11) {
-      setError("Informe um CPF válido com 11 dígitos.")
-      return
-    }
-    if (!qrPayload.trim()) {
-      setError("Leia o QR code da nota com a câmera antes de acumular.")
-      return
-    }
-    setLoading(true)
-    try {
-      const res = await fetch(apiUrl("/api/public/nfce-points"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tenant_slug: tenantSlug,
-          cpf: raw,
-          qr_payload: qrPayload.trim(),
-        }),
-      })
-      const text = await res.text()
-      if (!res.ok) {
-        setError(text || res.statusText)
-        return
-      }
-      setSuccess(JSON.parse(text))
-      setQrPayload("")
-    } catch (err) {
-      setError(err.message || "Erro ao enviar.")
-    } finally {
-      setLoading(false)
-    }
-  }
+      : undefined
 
   if (!tenantSlug) {
     return (
-      <div className="nfce-public-page container py-5 text-center px-3">
-        <p className="nfce-empty-state mb-0">
-          Use o link do estabelecimento. Ex.: <code>/pontos-nota?tenant=slug-da-loja</code>
-        </p>
-        <p className="nfce-empty-state mt-2 mb-0">
-          <Link to="/cadastro">Cadastro no programa</Link>
-        </p>
+      <div id="pontos-nota-root" className="min-h-screen">
+        <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-50 via-indigo-50/50 to-violet-100/60">
+          {displayBackgroundUrl ? <div className="absolute inset-0 bg-slate-900/55 backdrop-blur-[2px]" aria-hidden /> : null}
+          <div className="relative z-10 mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center px-4 py-16 text-center">
+            <div className="rounded-2xl border border-white/60 bg-white/90 p-8 shadow-soft-lg backdrop-blur-md motion-safe:animate-fade-in-up">
+              <Sparkles className="mx-auto mb-4 h-10 w-10 text-indigo-600" strokeWidth={1.5} aria-hidden />
+              <h1 className="text-xl font-semibold tracking-tight text-slate-900">Programa de fidelidade</h1>
+              <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                Use o link do estabelecimento. Ex.:{" "}
+                <code className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs text-slate-800">/pontos-nota?tenant=slug-da-loja</code>
+              </p>
+              <Link
+                to="/cadastro"
+                className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-3.5 text-sm font-semibold text-white shadow-md transition hover:bg-slate-800 hover:shadow-lg"
+              >
+                Ir para cadastro
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : "none",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      <div
-        className="d-flex justify-content-center align-items-start py-4 px-3"
-        style={{
-          minHeight: "100vh",
-          backgroundColor: backgroundUrl ? "rgba(0,0,0,0.45)" : "transparent",
-          boxSizing: "border-box",
-          width: "100%",
-          overflowX: "hidden",
-        }}
-      >
-        <div
-          className="nfce-public-page card shadow border-0 my-3"
-          style={{
-            width: "100%",
-            maxWidth: 520,
-            backgroundColor: "rgba(255,255,255,0.96)",
-            boxSizing: "border-box",
-            overflow: "hidden",
-          }}
-        >
-          <div className="card-body p-3 p-md-4">
-            <h1 className="nfce-title">Pontos pela nota (NFC-e)</h1>
-            <p className="nfce-intro mb-4">
-              Informe o CPF cadastrado e use só a <strong>câmera traseira</strong> para ler o <strong>QR code da nota</strong>{" "}
-              (impresso no papel). O valor vem da consulta da SEFAZ. Cada nota vale uma vez.
+    <div id="pontos-nota-root" className="min-h-screen">
+      <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-50 via-indigo-50/40 to-violet-100/50" style={shellStyle}>
+        {displayBackgroundUrl ? (
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/50 via-slate-900/45 to-slate-900/55 backdrop-blur-[1px]" aria-hidden />
+        ) : (
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(99,102,241,0.15),transparent)]" aria-hidden />
+        )}
+
+        <div className={`relative z-10 mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-6 lg:px-8 lg:pb-20 lg:pt-14 ${displayBackgroundUrl ? "text-white" : ""}`}>
+          <header className="mx-auto max-w-3xl text-center motion-safe:opacity-0 motion-safe:animate-fade-in-up motion-reduce:opacity-100">
+            <p
+              className={`mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium sm:text-sm ${
+                displayBackgroundUrl
+                  ? "border border-white/20 bg-white/10 text-white/95 backdrop-blur-md"
+                  : "border border-slate-200/80 bg-white/70 text-slate-600 shadow-sm backdrop-blur-sm"
+              }`}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" aria-hidden />
+              <span>{loyaltyBadgeText}</span>
             </p>
+            <h1
+              className={`text-balance text-3xl font-bold tracking-tight sm:text-4xl lg:text-[2.75rem] lg:leading-[1.15] ${
+                displayBackgroundUrl ? "text-white drop-shadow-sm" : "text-slate-900"
+              }`}
+            >
+              Ganhe pontos e troque por prêmios 🎁
+            </h1>
+            <p
+              className={`mx-auto mt-4 max-w-xl text-pretty text-base sm:text-lg ${
+                displayBackgroundUrl ? "text-white/90" : "text-slate-600"
+              }`}
+            >
+              É simples, rápido e gratuito
+            </p>
+          </header>
 
-            <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="nfce-cpf">CPF (cadastrado no programa)</label>
-          <input
-            id="nfce-cpf"
-            type="text"
-            className="form-control"
-            value={cpf}
-            onChange={(e) => setCpf(maskCPF(e.target.value))}
-            placeholder="000.000.000-00"
-            maxLength={14}
-            autoComplete="off"
-          />
-        </div>
-
-        <div className="form-group">
-          <label className="d-block">QR code da nota (somente leitura pela câmera)</label>
-          {qrPayload ? (
-            <div className="mb-2">
-              <p className="text-success small font-weight-bold mb-1">Nota lida com sucesso.</p>
-              <button type="button" className="btn btn-outline-secondary btn-sm" onClick={clearNota}>
-                Ler outra nota
-              </button>
+          <section className="mt-16 lg:mt-20" aria-labelledby="passos-titulo">
+            <h2 id="passos-titulo" className="sr-only">
+              Como funciona em três passos
+            </h2>
+            <div className="grid gap-6 md:grid-cols-3 md:gap-8">
+              <LoyaltyStepCard
+                icon={User}
+                title="Cadastre-se"
+                description="Crie sua conta em menos de 1 minuto"
+                to={cadastroPath}
+                label="Criar conta"
+                buttonVariant="slate"
+                className="[animation-delay:0.05s]"
+              />
+              <LoyaltyStepCard
+                icon={Receipt}
+                title="Envie sua nota fiscal"
+                description="Ganhe pontos a cada compra realizada"
+                to={enviarNotaPath}
+                label="Cadastrar nota"
+                buttonVariant="indigo"
+                className="[animation-delay:0.15s]"
+              />
+              <LoyaltyStepCard
+                icon={Gift}
+                title="Resgate prêmios"
+                description="Troque seus pontos por produtos incríveis"
+                to={resgatarPath}
+                label="Ver prêmios"
+                buttonVariant="emerald"
+                className="[animation-delay:0.25s]"
+              />
             </div>
-          ) : (
-            <>
-              <button
-                type="button"
-                className="btn btn-outline-primary mb-2"
-                disabled={startingCamera}
-                onClick={() => void (cameraOn ? stopScanner() : startScanner())}
-              >
-                {startingCamera
-                  ? "Abrindo câmera…"
-                  : cameraOn
-                    ? "Parar leitura"
-                    : "Ler QR code com a câmera traseira"}
-              </button>
-              {cameraOn && (
-                <div className="mb-3">
-                  <p className="nfce-hint mb-1">
-                    Enquadre o QR dentro da moldura; a câmera usada é a de trás. O leitor foi ajustado para QR codes longos
-                    (NFC-e).
-                  </p>
-                  <div
-                    className="rounded overflow-hidden bg-dark position-relative"
-                    style={{ maxWidth: "100%", lineHeight: 0 }}
-                  >
-                    <video
-                      ref={videoRef}
-                      className="w-100"
-                      style={{ display: "block", minHeight: 220, objectFit: "cover" }}
-                      muted
-                      playsInline
-                    />
-                  </div>
+          </section>
+
+          <section className="mt-16 lg:mt-20" aria-label="Vantagens do programa">
+            <div className="grid gap-4 sm:grid-cols-3 sm:gap-6">
+              {BENEFITS.map((b, i) => (
+                <div
+                  key={b.text}
+                  className={`flex items-start gap-3 rounded-2xl p-5 shadow-soft backdrop-blur-md transition duration-300 hover:shadow-soft-lg motion-safe:opacity-0 motion-safe:animate-fade-in-up motion-reduce:opacity-100 ${
+                    i === 0 ? "[animation-delay:0.1s]" : i === 1 ? "[animation-delay:0.2s]" : "[animation-delay:0.3s]"
+                  } ${
+                    displayBackgroundUrl
+                      ? "border border-white/20 bg-white/10 text-white hover:border-white/35"
+                      : "border border-slate-200/90 bg-white/90 hover:border-indigo-200/80"
+                  }`}
+                >
+                  <span className="text-2xl leading-none" aria-hidden>
+                    {b.emoji}
+                  </span>
+                  <p className={`text-sm font-medium leading-snug ${displayBackgroundUrl ? "text-white/95" : "text-slate-800"}`}>{b.text}</p>
                 </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {error && (
-          <div className="cp-alert cp-alert-danger mb-3" role="alert">
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="cp-alert cp-alert-success mb-3" role="status">
-            <strong>{success.message}</strong>
-            <p className="mb-0 small mt-2">
-              +{success.points_added} pts · Novo saldo: {success.new_balance} pts
-            </p>
-          </div>
-        )}
-        <button type="submit" className="btn btn-primary btn-block" disabled={loading || !qrPayload.trim()}>
-          {loading ? "Enviando…" : "Acumular pontos"}
-        </button>
-            </form>
-
-            <div className="nfce-footer-links mt-4">
-              <p className="mb-2">Acessos rápidos</p>
-              <div className="nfce-footer-actions">
-                <Link className="nfce-footer-action" to={`/resgatar?tenant=${encodeURIComponent(tenantSlug)}`}>
-                  Ver saldo e resgates
-                </Link>
-                <Link className="nfce-footer-action" to={`/cadastro?tenant=${encodeURIComponent(tenantSlug)}`}>
-                  Cadastro
-                </Link>
-              </div>
+              ))}
             </div>
-          </div>
+          </section>
+
+          <footer
+            className={`mt-16 border-t pt-10 text-center lg:mt-20 ${displayBackgroundUrl ? "border-white/15" : "border-slate-200/80"}`}
+          >
+            <p className={`text-sm ${displayBackgroundUrl ? "text-white/75" : "text-slate-500"}`}>Dúvidas? Fale com a loja</p>
+          </footer>
         </div>
       </div>
     </div>

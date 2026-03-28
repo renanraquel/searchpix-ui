@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import { apiUrl } from "../api"
+import { PublicProgramFooterBootstrap } from "../components/public/PublicProgramFooter"
 
 const REDEMPTIONS_PAGE_SIZE = 5
 
@@ -145,15 +146,7 @@ export default function PublicRedemption() {
         >
           <div className="card-body p-3 p-md-4">
             <h1 className="h3 mb-2">{data?.tenant?.name || "Carregando..."}</h1>
-            <p className="text-muted mb-2">Resgate seus pontos</p>
-            <div className="pr-public-quick-actions mb-4">
-              <p className="mb-2">Acessos rápidos</p>
-              <div className="pr-public-quick-actions-grid">
-                <Link className="pr-public-quick-action pr-public-quick-action-primary" to={`/pontos-nota?tenant=${encodeURIComponent(tenantSlug)}`}>
-                  Somar pontos com a NFC-e (QR da nota)
-                </Link>
-              </div>
-            </div>
+            <p className="text-muted mb-4">Resgate seus pontos</p>
 
             {!data?.customer && (
               <form onSubmit={handleCpfSubmit} className="mb-4">
@@ -310,6 +303,8 @@ export default function PublicRedemption() {
                 </Link>
               </div>
             )}
+
+            <PublicProgramFooterBootstrap tenantSlug={tenantSlug} />
           </div>
         </div>
       </div>

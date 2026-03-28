@@ -405,3 +405,22 @@
     display: inline-block !important;
   }
 }
+
+/* Público: “Voltar” ao hub pontos-nota — indigo-600 alinhado ao Tailwind (Cadastrar nota) */
+.public-footer-voltar-hub {
+  background-color: #4f46e5;
+  border: 1px solid #4f46e5;
+  color: #fff;
+  font-weight: 600;
+}
+
+.public-footer-voltar-hub:hover,
+.public-footer-voltar-hub:focus {
+  background-color: #4338ca;
+  border-color: #4338ca;
+  color: #fff;
+}
+
+.public-footer-voltar-hub:focus {
+  box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.35);
+}
