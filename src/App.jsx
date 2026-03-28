@@ -8,6 +8,7 @@ import Products from "./pages/Products"
 import Customers from "./pages/Customers"
 import Points from "./pages/Points"
 import Redemptions from "./pages/Redemptions"
+import SystemParams from "./pages/SystemParams"
 import EfetuarResgate from "./pages/EfetuarResgate"
 import PublicRedemption from "./pages/PublicRedemption"
 import Pricing from "./pages/Pricing"
@@ -55,6 +56,7 @@ export default function App() {
           <Route path="produtos" element={<Products />} />
           <Route path="clientes" element={<Customers />} />
           <Route path="pontos" element={<Points />} />
+          <Route path="parametros-sistema" element={<SystemParams />} />
           <Route path="resgates" element={<Redemptions />} />
           <Route path="resgates/efetuar" element={<EfetuarResgate />} />
         </Route>

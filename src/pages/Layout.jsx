@@ -118,6 +118,9 @@ export default function Layout({ onLogout }) {
             <SidebarLink to="/pontos" icon="mdi-star-circle" onNavigate={closeMobileMenu}>
               Lançar pontos
             </SidebarLink>
+            <SidebarLink to="/parametros-sistema" icon="mdi-settings" onNavigate={closeMobileMenu}>
+              Parâmetros sistema
+            </SidebarLink>
             <SidebarLink to="/resgates" end icon="mdi-magnify" onNavigate={closeMobileMenu}>
               Pesquisa de resgates
             </SidebarLink>

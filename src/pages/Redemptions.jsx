@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { fetchApi, apiUrl, getToken, getTenant } from "../api"
+import { fetchApi } from "../api"
 
 function maskCPF(v) {
   const n = String(v).replace(/\D/g, "").slice(0, 11)
@@ -42,15 +42,6 @@ export default function Redemptions() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [bgUploading, setBgUploading] = useState(false)
-  const [bgMessage, setBgMessage] = useState("")
-  const tenant = getTenant()
-
-  const tenantSlug = tenant?.slug || tenant?.Slug || "seu-tenant"
-  const publicUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/resgatar?tenant=${tenantSlug}`
-      : `https://searchpix-ui.onrender.com/resgatar?tenant=${tenantSlug}`
 
   async function search(goToPage = 1) {
     setLoading(true)
@@ -79,34 +70,6 @@ export default function Redemptions() {
     search(1)
   }
 
-  async function handleBackgroundChange(e) {
-    const file = e.target.files?.[0]
-    if (!file || !file.type.startsWith("image/")) {
-      setBgMessage("Selecione um arquivo de imagem.")
-      return
-    }
-    setBgMessage("")
-    setBgUploading(true)
-    try {
-      const formData = new FormData()
-      formData.append("image", file)
-      const token = getToken()
-      const url = apiUrl("/api/tenants/background")
-      const res = await fetch(url, {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData,
-      })
-      if (!res.ok) throw new Error(await res.text())
-      setBgMessage("Imagem de fundo atualizada com sucesso. Atualize a tela pública para ver o resultado.")
-    } catch (err) {
-      setBgMessage(err.message)
-    } finally {
-      setBgUploading(false)
-      e.target.value = ""
-    }
-  }
-
   const items = data?.items ?? []
   const total = data?.total ?? 0
   const totalPages = data?.total_pages ?? 1
@@ -125,20 +88,6 @@ export default function Redemptions() {
     <div>
       <div className="page-header">
         <h3 className="page-title">Consulta de resgates</h3>
-      </div>
-
-      <div className="card mb-4 border-primary">
-        <div className="card-body">
-          <h5 className="card-title">Imagem de fundo da tela pública</h5>
-          <p className="card-text text-muted small mb-2">
-            Essa imagem aparece na tela externa de consulta de pontos:{" "}
-            <code className="text-break">{publicUrl}</code>
-          </p>
-          <input type="file" accept="image/*" disabled={bgUploading} className="form-control-file" onChange={handleBackgroundChange} />
-          {bgMessage && (
-            <p className={`small mt-2 mb-0 ${bgMessage.includes("sucesso") ? "text-success" : "text-danger"}`}>{bgMessage}</p>
-          )}
-        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="mb-4">
