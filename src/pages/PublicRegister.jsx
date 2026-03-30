@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
 import { apiUrl } from "../api"
 import { PublicProgramFooterBootstrap } from "../components/public/PublicProgramFooter"
+import { isValidCpf } from "../utils/cpf"
 
 function maskCPF(v) {
   const n = String(v).replace(/\D/g, "").slice(0, 11)
@@ -75,8 +76,16 @@ export default function PublicRegister() {
     const cpfDigits = cpf.replace(/\D/g, "")
     const phoneDigits = phone.replace(/\D/g, "")
     const nameNorm = nameToUpper(name).trim()
-    if (!nameNorm || cpfDigits.length !== 11 || phoneDigits.length < 10) {
-      setError("Preencha nome, CPF com 11 dígitos e telefone com DDD.")
+    if (!nameNorm) {
+      setError("Preencha o nome completo.")
+      return
+    }
+    if (!isValidCpf(cpfDigits)) {
+      setError("Informe um CPF válido.")
+      return
+    }
+    if (phoneDigits.length < 10) {
+      setError("Informe o telefone com DDD (10 ou 11 dígitos).")
       return
     }
     setSubmitting(true)

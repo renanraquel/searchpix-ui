@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { fetchApi } from "../api"
+import { isValidCpf } from "../utils/cpf"
 
 function maskCPF(v) {
   const n = v.replace(/\D/g, "").slice(0, 11)
@@ -51,8 +52,14 @@ export default function Customers() {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!form.cpf.replace(/\D/g, "") || !form.name.trim() || !form.phone.replace(/\D/g, "")) {
+    const cpfDigits = form.cpf.replace(/\D/g, "")
+    const phoneDigits = form.phone.replace(/\D/g, "")
+    if (!cpfDigits || !form.name.trim() || !phoneDigits) {
       setError("CPF, nome e celular são obrigatórios.")
+      return
+    }
+    if (!isValidCpf(cpfDigits)) {
+      setError("Informe um CPF válido.")
       return
     }
     setError("")
@@ -61,9 +68,9 @@ export default function Customers() {
         const res = await fetchApi(`/api/customers/update?id=${editing.id}`, {
           method: "POST",
           body: JSON.stringify({
-            cpf: form.cpf.replace(/\D/g, ""),
+            cpf: cpfDigits,
             name: nameToUpper(form.name).trim(),
-            phone: form.phone.replace(/\D/g, ""),
+            phone: phoneDigits,
           }),
         })
         if (!res.ok) throw new Error(await res.text())
@@ -71,9 +78,9 @@ export default function Customers() {
         const res = await fetchApi("/api/customers/create", {
           method: "POST",
           body: JSON.stringify({
-            cpf: form.cpf.replace(/\D/g, ""),
+            cpf: cpfDigits,
             name: nameToUpper(form.name).trim(),
-            phone: form.phone.replace(/\D/g, ""),
+            phone: phoneDigits,
           }),
         })
         if (!res.ok) throw new Error(await res.text())
