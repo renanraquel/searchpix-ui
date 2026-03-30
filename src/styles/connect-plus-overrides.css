@@ -42,6 +42,33 @@
   color: #2ba827;
 }
 
+/* Barra logada: link público pontos-nota (divulgação) à esquerda, em vermelho */
+.default-layout-navbar .navbar-menu-wrapper {
+  min-width: 0;
+}
+.layout-navbar-divulge-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+.layout-navbar-divulge-link {
+  color: #dc3545 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  max-width: 100%;
+}
+.layout-navbar-divulge-link:hover {
+  color: #b02a37 !important;
+}
+/* Mantém “tenant + Sair” à direita sem encolher */
+.default-layout-navbar .layout-navbar-user-actions {
+  flex-shrink: 0;
+}
+
 /* Área da marca estreita (mobile): texto menor + reticências */
 @media (max-width: 991px) {
   .navbar-brand-wrapper .app-brand-text {
@@ -185,6 +212,19 @@
   max-width: 36rem;
 }
 
+/* Contraste: text-muted na página de preços fica muito claro no hero/cards */
+.pricing-page .text-muted {
+  color: #475569 !important;
+}
+
+.pricing-page .pricing-card .text-muted {
+  color: #3f4b5c !important;
+}
+
+.pricing-page .pricing-faq .text-muted {
+  color: #475569 !important;
+}
+
 .letter-spacing-1 {
   letter-spacing: 0.08em;
 }
@@ -224,6 +264,16 @@
 
 .pricing-card--selectable.pricing-card--selected:hover {
   box-shadow: 0 0.5rem 1.5rem rgba(51, 201, 45, 0.22) !important;
+}
+
+/* Faixa no card de promoção (1 mês grátis) */
+.pricing-card--trial {
+  position: relative;
+  overflow: hidden;
+}
+
+.pricing-card__ribbon--trial {
+  background: #0d6efd;
 }
 
 /* Faixa “Inclui PIX” — só no card do plano PIX */

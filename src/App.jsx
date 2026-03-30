@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
-import { getToken } from "./api"
+import { getToken, getTenant } from "./api"
+import { isPixModuleEnabledForTenantSlug } from "./constants/pixModule"
 import LoginLoyalty from "./pages/LoginLoyalty"
 import Layout from "./pages/Layout"
 import Pix from "./pages/Pix"
@@ -12,6 +13,8 @@ import SystemParams from "./pages/SystemParams"
 import EfetuarResgate from "./pages/EfetuarResgate"
 import PublicRedemption from "./pages/PublicRedemption"
 import Pricing from "./pages/Pricing"
+import PricingPlanFollowup from "./pages/PricingPlanFollowup"
+import MerchantSignup from "./pages/MerchantSignup"
 import PublicRegister from "./pages/PublicRegister"
 import PublicNfcePoints from "./pages/PublicNfcePoints"
 import PublicNfcePointsEnviar from "./pages/PublicNfcePointsEnviar"
@@ -20,6 +23,23 @@ function PrivateRoute({ children }) {
   const token = getToken()
   if (!token) return <Navigate to="/login" replace />
   return children
+}
+
+function appHomePath() {
+  const t = getTenant()
+  return isPixModuleEnabledForTenantSlug(t?.slug) ? "/pix" : "/produtos"
+}
+
+function NavigateToAppHome() {
+  return <Navigate to={appHomePath()} replace />
+}
+
+function PrivatePixRoute() {
+  const t = getTenant()
+  if (!isPixModuleEnabledForTenantSlug(t?.slug)) {
+    return <Navigate to="/produtos" replace />
+  }
+  return <Pix />
 }
 
 export default function App() {
@@ -33,11 +53,13 @@ export default function App() {
         <Route path="/pontos-nota/enviar" element={<PublicNfcePointsEnviar />} />
         <Route path="/pontos-nota" element={<PublicNfcePoints />} />
         <Route path="/precos" element={<Pricing />} />
+        <Route path="/precos/como-comecar" element={<PricingPlanFollowup />} />
+        <Route path="/precos/cadastro-lojista" element={<MerchantSignup />} />
         <Route
           path="/login"
           element={
             token ? (
-              <Navigate to="/pix" replace />
+              <NavigateToAppHome />
             ) : (
               <LoginLoyalty onLogin={() => setToken(getToken())} />
             )
@@ -51,8 +73,8 @@ export default function App() {
             </PrivateRoute>
           }
         >
-          <Route index element={<Navigate to="/pix" replace />} />
-          <Route path="pix" element={<Pix />} />
+          <Route index element={<NavigateToAppHome />} />
+          <Route path="pix" element={<PrivatePixRoute />} />
           <Route path="produtos" element={<Products />} />
           <Route path="clientes" element={<Customers />} />
           <Route path="pontos" element={<Points />} />
@@ -60,7 +82,7 @@ export default function App() {
           <Route path="resgates" element={<Redemptions />} />
           <Route path="resgates/efetuar" element={<EfetuarResgate />} />
         </Route>
-        <Route path="*" element={<Navigate to="/pix" replace />} />
+        <Route path="*" element={<NavigateToAppHome />} />
       </Routes>
     </BrowserRouter>
   )

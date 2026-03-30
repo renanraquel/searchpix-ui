@@ -102,20 +102,41 @@ export default function PublicNfcePoints() {
 
   return (
     <div id="pontos-nota-root" className="min-h-screen">
-      <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-50 via-indigo-50/40 to-violet-100/50" style={shellStyle}>
+      <div
+        className={`relative min-h-screen overflow-x-hidden ${
+          displayBackgroundUrl
+            ? "bg-slate-900"
+            : "bg-slate-200 bg-gradient-to-br from-slate-200 via-slate-100 to-indigo-100/90"
+        }`}
+        style={shellStyle}
+      >
         {displayBackgroundUrl ? (
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/50 via-slate-900/45 to-slate-900/55 backdrop-blur-[1px]" aria-hidden />
+          <>
+            {/* Camadas fixas: leitura estável mesmo com foto clara ou branca */}
+            <div className="pointer-events-none absolute inset-0 bg-black/60" aria-hidden />
+            <div
+              className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-950/45 via-slate-950/25 to-slate-950/55 backdrop-blur-[0.5px]"
+              aria-hidden
+            />
+          </>
         ) : (
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(99,102,241,0.15),transparent)]" aria-hidden />
+          <div
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(99,102,241,0.18),transparent)]"
+            aria-hidden
+          />
         )}
 
-        <div className={`relative z-10 mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-6 lg:px-8 lg:pb-20 lg:pt-14 ${displayBackgroundUrl ? "text-white" : ""}`}>
+        <div
+          className={`relative z-10 mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-6 lg:px-8 lg:pb-20 lg:pt-14 ${
+            displayBackgroundUrl ? "text-white" : "text-slate-900"
+          }`}
+        >
           <header className="mx-auto max-w-3xl text-center motion-safe:opacity-0 motion-safe:animate-fade-in-up motion-reduce:opacity-100">
             <p
-              className={`mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium sm:text-sm ${
+              className={`mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold sm:text-sm ${
                 displayBackgroundUrl
-                  ? "border border-white/20 bg-white/10 text-white/95 backdrop-blur-md"
-                  : "border border-slate-200/80 bg-white/70 text-slate-600 shadow-sm backdrop-blur-sm"
+                  ? "border border-white/35 bg-black/35 text-white shadow-sm backdrop-blur-md"
+                  : "border-2 border-slate-300 bg-white text-slate-800 shadow-md backdrop-blur-sm"
               }`}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" aria-hidden />
@@ -123,14 +144,14 @@ export default function PublicNfcePoints() {
             </p>
             <h1
               className={`text-balance text-3xl font-bold tracking-tight sm:text-4xl lg:text-[2.75rem] lg:leading-[1.15] ${
-                displayBackgroundUrl ? "text-white drop-shadow-sm" : "text-slate-900"
+                displayBackgroundUrl ? "text-white [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]" : "text-slate-900"
               }`}
             >
               Ganhe pontos e troque por prêmios 🎁
             </h1>
             <p
-              className={`mx-auto mt-4 max-w-xl text-pretty text-base sm:text-lg ${
-                displayBackgroundUrl ? "text-white/90" : "text-slate-600"
+              className={`mx-auto mt-4 max-w-xl text-pretty text-base font-medium sm:text-lg ${
+                displayBackgroundUrl ? "text-white/95 [text-shadow:0_1px_8px_rgba(0,0,0,0.4)]" : "text-slate-700"
               }`}
             >
               É simples, rápido e gratuito
@@ -141,7 +162,13 @@ export default function PublicNfcePoints() {
             <h2 id="passos-titulo" className="sr-only">
               Como funciona em três passos
             </h2>
-            <div className="grid gap-6 md:grid-cols-3 md:gap-8">
+            <div
+              className={`grid gap-6 md:grid-cols-3 md:gap-8 ${
+                displayBackgroundUrl
+                  ? "[&>article]:shadow-2xl [&>article]:shadow-black/50 [&>article]:ring-1 [&>article]:ring-white/25"
+                  : "[&>article]:shadow-xl [&>article]:ring-2 [&>article]:ring-slate-400/90 [&>article]:border-slate-400"
+              }`}
+            >
               <LoyaltyStepCard
                 icon={User}
                 title="Cadastre-se"
@@ -181,23 +208,37 @@ export default function PublicNfcePoints() {
                     i === 0 ? "[animation-delay:0.1s]" : i === 1 ? "[animation-delay:0.2s]" : "[animation-delay:0.3s]"
                   } ${
                     displayBackgroundUrl
-                      ? "border border-white/20 bg-white/10 text-white hover:border-white/35"
-                      : "border border-slate-200/90 bg-white/90 hover:border-indigo-200/80"
+                      ? "border border-white/30 bg-black/30 text-white shadow-lg shadow-black/20 backdrop-blur-sm hover:border-white/45 hover:bg-black/35"
+                      : "border-2 border-slate-300 bg-white text-slate-900 shadow-md hover:border-indigo-300/90 hover:shadow-lg"
                   }`}
                 >
                   <span className="text-2xl leading-none" aria-hidden>
                     {b.emoji}
                   </span>
-                  <p className={`text-sm font-medium leading-snug ${displayBackgroundUrl ? "text-white/95" : "text-slate-800"}`}>{b.text}</p>
+                  <p
+                    className={`text-sm font-semibold leading-snug ${
+                      displayBackgroundUrl ? "text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.35)]" : "text-slate-800"
+                    }`}
+                  >
+                    {b.text}
+                  </p>
                 </div>
               ))}
             </div>
           </section>
 
           <footer
-            className={`mt-16 border-t pt-10 text-center lg:mt-20 ${displayBackgroundUrl ? "border-white/15" : "border-slate-200/80"}`}
+            className={`mt-16 border-t pt-10 text-center lg:mt-20 ${
+              displayBackgroundUrl ? "border-white/25" : "border-slate-400/60"
+            }`}
           >
-            <p className={`text-sm ${displayBackgroundUrl ? "text-white/75" : "text-slate-500"}`}>Dúvidas? Fale com a loja</p>
+            <p
+              className={`text-sm font-medium ${
+                displayBackgroundUrl ? "text-white/90 [text-shadow:0_1px_6px_rgba(0,0,0,0.35)]" : "text-slate-600"
+              }`}
+            >
+              Dúvidas? Fale com a loja
+            </p>
           </footer>
         </div>
       </div>

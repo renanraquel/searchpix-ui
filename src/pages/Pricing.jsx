@@ -1,10 +1,8 @@
-import { useState } from "react"
 import { Link } from "react-router-dom"
+import { PRICING_PLAN_IDS, WHATSAPP_LINK, WHATSAPP_PHONE_DISPLAY } from "../constants/pricingPublic"
 
-const PLANS = {
-  fidelizacao: "fidelizacao",
-  fidelizacaoPix: "fidelizacao-pix",
-}
+const PLAN = PRICING_PLAN_IDS.fidelizacaoTrial49
+const followupPath = () => `/precos/como-comecar?plano=${encodeURIComponent(PLAN)}`
 
 const faqItems = [
   {
@@ -13,28 +11,19 @@ const faqItems = [
   },
   {
     q: "Como funciona o módulo de consulta PIX?",
-    a: "É um complemento opcional. Após a taxa única de integração (R$ 500), o módulo é liberado na sua conta para uso junto com a assinatura mensal de fidelização.",
+    a: "A consulta de pagamentos por PIX é um recurso opcional, contratado à parte. Para utilizar, entre em contato com o suporte (WhatsApp) e combine condições e integração.",
   },
   {
     q: "Posso usar só o PIX sem o plano de fidelização?",
-    a: "Não. O módulo PIX é oferecido como extensão do sistema de fidelização, que permanece com assinatura mensal.",
+    a: "O foco do SearchPix Fidelização é o programa de pontos; recursos de PIX, quando disponíveis, são tratados com o suporte em conjunto com a sua assinatura.",
   },
   {
     q: "Como faço para assinar?",
-    a: "Entre em contato ou utilize o fluxo de cadastro quando estiver disponível. Os botões abaixo podem ser ligados ao seu gateway de pagamento ou WhatsApp.",
+    a: "Use os próximos passos após selecionar o plano, cadastre-se ou fale conosco pelo WhatsApp.",
   },
 ]
 
 export default function Pricing() {
-  const [selectedPlan, setSelectedPlan] = useState(PLANS.fidelizacaoPix)
-
-  function planKeyDown(e, plan) {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault()
-      setSelectedPlan(plan)
-    }
-  }
-
   return (
     <div className="pricing-page">
       <header className="pricing-header border-bottom">
@@ -61,36 +50,44 @@ export default function Pricing() {
             </p>
             <h1 className="display-4 font-weight-bold mb-3 pricing-hero__title">Preços</h1>
             <p className="lead text-muted mx-auto pricing-hero__lead">
-              Planos pensados para o varejo: fidelize clientes com pontos e resgates. Amplie com consulta e fluxo PIX
-              quando precisar.
+              Fidelize clientes com pontos e resgates. Painel completo para sua equipe no varejo.
+            </p>
+            <p className="text-muted small mb-0 mt-4">
+              Dúvidas e contato:{" "}
+              <a
+                href={WHATSAPP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-weight-bold text-primary"
+              >
+                WhatsApp {WHATSAPP_PHONE_DISPLAY}
+              </a>
             </p>
           </div>
         </section>
 
         <section className="container pb-5">
           <p className="text-center text-muted small mb-4">
-            Clique em um plano para selecionar. O botão destaca o plano ativo.
+            Use <strong>Plano selecionado</strong> para seguir com o cadastro e os próximos passos.
           </p>
-          <div className="row justify-content-center" role="radiogroup" aria-label="Escolha um plano">
-            <div className="col-lg-5 mb-4 mb-lg-0">
-              <div
-                className={`card pricing-card pricing-card--selectable h-100 shadow-sm ${
-                  selectedPlan === PLANS.fidelizacao ? "pricing-card--selected" : ""
-                }`}
-                role="radio"
-                aria-checked={selectedPlan === PLANS.fidelizacao}
-                tabIndex={0}
-                onClick={() => setSelectedPlan(PLANS.fidelizacao)}
-                onKeyDown={(e) => planKeyDown(e, PLANS.fidelizacao)}
-              >
+          <div className="row justify-content-center">
+            <div className="col-lg-6 col-xl-5 mb-4">
+              <div className="card pricing-card pricing-card--trial pricing-card--selectable pricing-card--selected h-100 shadow-sm">
+                <div className="pricing-card__ribbon pricing-card__ribbon--trial">1 mês grátis</div>
                 <div className="card-body p-4 p-md-5 d-flex flex-column">
-                  <p className="text-muted small font-weight-bold text-uppercase mb-2">Plano essencial</p>
+                  <p className="text-muted small font-weight-bold text-uppercase mb-2">Promoção</p>
                   <h2 className="h3 font-weight-bold mb-1">Fidelização</h2>
-                  <p className="text-muted mb-4">Programa de pontos, clientes e resgates — sem módulo PIX.</p>
+                  <p className="text-muted mb-4">
+                    Programa de pontos, clientes e resgates. O 1º mês é gratuito; em seguida, assinatura mensal.
+                  </p>
                   <div className="mb-4">
-                    <span className="pricing-card__currency">R$</span>
-                    <span className="pricing-card__amount">29,90</span>
-                    <span className="text-muted"> / mês</span>
+                    <p className="mb-2 font-weight-bold text-success">1º mês free</p>
+                    <p className="mb-0">
+                      <span className="text-muted">Depois </span>
+                      <span className="pricing-card__currency">R$</span>
+                      <span className="pricing-card__amount">49,90</span>
+                      <span className="text-muted"> / mês</span>
+                    </p>
                   </div>
                   <ul className="list-unstyled flex-grow-1 mb-4 pricing-card__list">
                     <li>Cadastro de clientes e produtos</li>
@@ -99,68 +96,21 @@ export default function Pricing() {
                     <li>Painel web para sua equipe</li>
                     <li>Atualizações do módulo de fidelização</li>
                   </ul>
-                  <span
-                    className={`btn btn-lg btn-block mt-auto ${
-                      selectedPlan === PLANS.fidelizacao ? "btn-primary" : "btn-outline-primary"
-                    }`}
-                  >
-                    {selectedPlan === PLANS.fidelizacao ? "Plano selecionado" : "Selecionar este plano"}
-                  </span>
-                  <p className="text-muted small text-center mt-3 mb-0">
-                    Integração com pagamento será configurada em seguida.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-lg-5">
-              <div
-                className={`card pricing-card pricing-card--pix pricing-card--selectable h-100 shadow-sm ${
-                  selectedPlan === PLANS.fidelizacaoPix ? "pricing-card--selected" : ""
-                }`}
-                role="radio"
-                aria-checked={selectedPlan === PLANS.fidelizacaoPix}
-                tabIndex={0}
-                onClick={() => setSelectedPlan(PLANS.fidelizacaoPix)}
-                onKeyDown={(e) => planKeyDown(e, PLANS.fidelizacaoPix)}
-              >
-                <div className="pricing-card__ribbon">Inclui PIX</div>
-                <div className="card-body p-4 p-md-5 d-flex flex-column">
-                  <p className="text-muted small font-weight-bold text-uppercase mb-2">Plano completo</p>
-                  <h2 className="h3 font-weight-bold mb-1">Fidelização + PIX</h2>
-                  <p className="text-muted mb-4">
-                    Tudo do plano Fidelização, mais consulta e recursos PIX após a integração.
-                  </p>
-                  <div className="mb-3">
-                    <span className="pricing-card__currency">R$</span>
-                    <span className="pricing-card__amount">29,90</span>
-                    <span className="text-muted"> / mês</span>
+                  <div className="pricing-card__once mb-4 p-3 rounded">
+                    <p className="small text-muted font-weight-bold mb-2">Consulta de pagamentos por PIX</p>
+                    <p className="text-muted small mb-0">
+                      Para utilizar esse recurso, entre em contato com o{" "}
+                      <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="font-weight-bold">
+                        suporte pelo WhatsApp
+                      </a>{" "}
+                      e alinhe condições e integração.
+                    </p>
                   </div>
-                  <div className="pricing-card__once mb-4">
-                    <span className="badge badge-pill pricing-card__badge">Taxa única de integração</span>
-                    <div className="mt-2">
-                      <span className="pricing-card__currency pricing-card__currency--sm">R$</span>
-                      <span className="pricing-card__amount pricing-card__amount--sm">500</span>
-                      <span className="text-muted"> pagamento único para liberar o módulo PIX</span>
-                    </div>
-                  </div>
-                  <ul className="list-unstyled flex-grow-1 mb-4 pricing-card__list">
-                    <li>
-                      <strong>Tudo</strong> do plano Fidelização
-                    </li>
-                    <li>Integração e liberação do módulo de consulta PIX</li>
-                    <li>Suporte na configuração inicial da integração</li>
-                    <li>Mesma assinatura mensal após a taxa de setup</li>
-                  </ul>
-                  <span
-                    className={`btn btn-lg btn-block mt-auto ${
-                      selectedPlan === PLANS.fidelizacaoPix ? "btn-primary" : "btn-outline-primary"
-                    }`}
-                  >
-                    {selectedPlan === PLANS.fidelizacaoPix ? "Plano selecionado" : "Selecionar este plano"}
-                  </span>
+                  <Link to={followupPath()} className="btn btn-lg btn-block mt-auto btn-primary">
+                    Plano selecionado
+                  </Link>
                   <p className="text-muted small text-center mt-3 mb-0">
-                    Os valores podem ser ajustados antes do go-live.
+                    Condições comerciais podem ser confirmadas no contato.
                   </p>
                 </div>
               </div>
@@ -190,6 +140,12 @@ export default function Pricing() {
       <footer className="pricing-footer border-top py-4 mt-auto">
         <div className="container text-center text-muted small">
           <p className="mb-1">RR Solutions — SearchPix Fidelização</p>
+          <p className="mb-2">
+            Dúvidas e contato:{" "}
+            <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="text-primary">
+              WhatsApp {WHATSAPP_PHONE_DISPLAY}
+            </a>
+          </p>
           <Link to="/login" className="text-primary">
             Acesso ao painel
           </Link>

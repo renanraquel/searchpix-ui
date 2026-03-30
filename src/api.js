@@ -7,6 +7,22 @@ export function apiUrl(path = "") {
   return `${base}${p}`
 }
 
+/** Origem do front (links públicos para clientes). Override: VITE_PUBLIC_UI_ORIGIN. */
+export function getPublicUiOrigin() {
+  const fromEnv = (import.meta.env.VITE_PUBLIC_UI_ORIGIN || "").trim().replace(/\/$/, "")
+  if (fromEnv) return fromEnv
+  if (typeof window !== "undefined") return window.location.origin
+  return ""
+}
+
+/** URL da tela “pontos-nota” para divulgação (slug da loja). */
+export function getPontosNotaPublicUrl(tenantSlug) {
+  if (!tenantSlug) return ""
+  const o = getPublicUiOrigin()
+  if (!o) return ""
+  return `${o}/pontos-nota?tenant=${encodeURIComponent(tenantSlug)}`
+}
+
 export function getToken() {
   return localStorage.getItem("token")
 }

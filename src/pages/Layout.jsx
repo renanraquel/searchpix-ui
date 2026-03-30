@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom"
-import { setAuth, getTenant } from "../api"
+import { setAuth, getTenant, getPontosNotaPublicUrl } from "../api"
+import { isPixModuleEnabledForTenantSlug } from "../constants/pixModule"
 
 function SidebarLink({ to, end, icon, children, onNavigate }) {
   return (
@@ -24,6 +25,9 @@ export default function Layout({ onLogout }) {
   const navigate = useNavigate()
   const location = useLocation()
   const tenant = getTenant()
+  const showPixModule = isPixModuleEnabledForTenantSlug(tenant?.slug)
+  const homePath = showPixModule ? "/pix" : "/produtos"
+  const pontosNotaDivulgeUrl = tenant?.slug ? getPontosNotaPublicUrl(tenant.slug) : ""
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -64,7 +68,7 @@ export default function Layout({ onLogout }) {
           {/* Um único link: brand-logo + brand-logo-mini com d-flex quebravam o display:none do tema */}
           <NavLink
             className="navbar-brand app-brand-text-link d-flex align-items-center justify-content-center w-100"
-            to="/pix"
+            to={homePath}
           >
             <span className="app-brand-text">RR Solutions</span>
           </NavLink>
@@ -79,7 +83,23 @@ export default function Layout({ onLogout }) {
           >
             <span className="mdi mdi-menu" style={{ fontSize: "1.35rem", color: "#8e94a9" }} />
           </button>
-          <ul className="navbar-nav navbar-nav-right ml-auto align-items-center">
+          {pontosNotaDivulgeUrl && (
+            <div className="layout-navbar-divulge-wrap d-flex align-items-center px-2 px-md-3">
+              <span className="layout-navbar-divulge-label d-none d-md-inline text-muted small font-weight-medium text-nowrap mr-2">
+                Link para clientes
+              </span>
+              <a
+                href={pontosNotaDivulgeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="layout-navbar-divulge-link small font-weight-bold"
+                title={pontosNotaDivulgeUrl}
+              >
+                {pontosNotaDivulgeUrl}
+              </a>
+            </div>
+          )}
+          <ul className="navbar-nav navbar-nav-right ml-auto align-items-center layout-navbar-user-actions">
             {tenant?.name && (
               <li className="nav-item mr-3 d-none d-md-block">
                 <span className="text-dark font-weight-bold">{tenant.name}</span>
@@ -106,9 +126,11 @@ export default function Layout({ onLogout }) {
         >
           <ul className="nav">
             <li className="nav-item nav-category">Fidelização</li>
-            <SidebarLink to="/pix" icon="mdi-cash-multiple" onNavigate={closeMobileMenu}>
-              PIX
-            </SidebarLink>
+            {showPixModule && (
+              <SidebarLink to="/pix" icon="mdi-cash-multiple" onNavigate={closeMobileMenu}>
+                PIX
+              </SidebarLink>
+            )}
             <SidebarLink to="/produtos" icon="mdi-package-variant" onNavigate={closeMobileMenu}>
               Produtos
             </SidebarLink>

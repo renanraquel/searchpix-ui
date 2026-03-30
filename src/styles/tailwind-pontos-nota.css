@@ -2,8 +2,11 @@
 @tailwind utilities;
 
 /* Font stack + antialiasing scoped to loyalty page root */
-#pontos-nota-root {
+#pontos-nota-root,
+#pricing-onboarding-root {
   font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Herança do Connect Plus (body #a7afb7) quebra contraste se utilities não carregarem */
+  color: #0f172a;
 }

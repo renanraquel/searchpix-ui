@@ -279,19 +279,21 @@ export default function PublicNfcePointsEnviar() {
           className="d-flex justify-content-center align-items-start py-4 px-3"
           style={{
             minHeight: "100vh",
-            backgroundColor: backgroundUrl ? "rgba(0,0,0,0.45)" : "transparent",
+            backgroundColor: backgroundUrl ? "rgba(0,0,0,0.62)" : "#e2e8f0",
             boxSizing: "border-box",
             width: "100%",
             overflowX: "hidden",
           }}
         >
           <div
-            className="my-3 w-full rounded-2xl border border-slate-200/90 p-6 shadow-soft-lg backdrop-blur-sm sm:p-8"
+            className="my-3 w-full rounded-2xl border-2 p-6 shadow-xl backdrop-blur-sm sm:p-8"
             style={{
               maxWidth: 520,
-              backgroundColor: backgroundUrl ? "rgba(255,255,255,0.96)" : "#ffffff",
+              backgroundColor: backgroundUrl ? "rgba(255,255,255,0.97)" : "#ffffff",
+              borderColor: backgroundUrl ? "rgba(255,255,255,0.45)" : "#94a3b8",
               boxSizing: "border-box",
               overflow: "hidden",
+              boxShadow: backgroundUrl ? "0 25px 50px -12px rgba(0,0,0,0.45)" : "0 12px 40px -12px rgba(15,23,42,0.18)",
             }}
           >
             <h1 className="text-xl font-bold tracking-tight text-slate-900">Acumular pontos pela NFC-e</h1>
