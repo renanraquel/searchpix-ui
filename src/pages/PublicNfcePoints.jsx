@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import { User, Receipt, Gift, Sparkles } from "lucide-react"
-import { apiUrl } from "../api"
+import { apiUrl, trackPublicPageVisit } from "../api"
 import LoyaltyStepCard from "../components/pontos-nota/LoyaltyStepCard"
 import "../styles/tailwind-pontos-nota.css"
 
@@ -29,6 +29,15 @@ export default function PublicNfcePoints() {
   const cadastroPath = tenantSlug ? `/cadastro?tenant=${encodeURIComponent(tenantSlug)}` : "/cadastro"
   const resgatarPath = tenantSlug ? `/resgatar?tenant=${encodeURIComponent(tenantSlug)}` : "/resgatar"
   const enviarNotaPath = tenantSlug ? `/pontos-nota/enviar?tenant=${encodeURIComponent(tenantSlug)}` : "/pontos-nota/enviar"
+
+  useEffect(() => {
+    trackPublicPageVisit({
+      pageKey: "pontos-nota",
+      pagePath: "/pontos-nota",
+      query: typeof window !== "undefined" ? window.location.search : "",
+      tenantSlug,
+    })
+  }, [tenantSlug])
 
   useEffect(() => {
     if (!tenantSlug) return

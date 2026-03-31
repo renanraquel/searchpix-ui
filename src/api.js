@@ -54,3 +54,27 @@ export async function fetchApi(path, options = {}) {
   const res = await fetch(url, { ...options, headers })
   return res
 }
+
+export function trackPublicPageVisit({ pageKey, pagePath, query = "", tenantSlug = "" }) {
+  if (!pageKey || !pagePath) return
+  const payload = JSON.stringify({
+    page_key: pageKey,
+    page_path: pagePath,
+    query,
+    tenant_slug: tenantSlug || "",
+  })
+
+  const endpoint = apiUrl("/api/public/page-visit")
+  if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+    const blob = new Blob([payload], { type: "application/json" })
+    navigator.sendBeacon(endpoint, blob)
+    return
+  }
+
+  fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: payload,
+    keepalive: true,
+  }).catch(() => {})
+}
