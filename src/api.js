@@ -57,18 +57,28 @@ export async function fetchApi(path, options = {}) {
 
 export function trackPublicPageVisit({ pageKey, pagePath, query = "", tenantSlug = "" }) {
   if (!pageKey || !pagePath) return
-  const payload = JSON.stringify({
+  const payloadObj = {
     page_key: pageKey,
     page_path: pagePath,
     query,
     tenant_slug: tenantSlug || "",
-  })
+  }
+  const payload = JSON.stringify(payloadObj)
 
   const endpoint = apiUrl("/api/public/page-visit")
+  const qs = new URLSearchParams(payloadObj).toString()
+  const pixelEndpoint = `${endpoint}?${qs}`
+
+  if (typeof window !== "undefined" && typeof Image !== "undefined") {
+    const img = new Image()
+    img.decoding = "async"
+    img.src = pixelEndpoint
+  }
+
   if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
     const blob = new Blob([payload], { type: "application/json" })
-    navigator.sendBeacon(endpoint, blob)
-    return
+    const queued = navigator.sendBeacon(endpoint, blob)
+    if (queued) return
   }
 
   fetch(endpoint, {
