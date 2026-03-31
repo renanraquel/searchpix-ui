@@ -15,6 +15,7 @@ import PublicRedemption from "./pages/PublicRedemption"
 import Pricing from "./pages/Pricing"
 import PricingPlanFollowup from "./pages/PricingPlanFollowup"
 import MerchantSignup from "./pages/MerchantSignup"
+import VerifyMerchantEmail from "./pages/VerifyMerchantEmail"
 import PublicRegister from "./pages/PublicRegister"
 import PublicNfcePoints from "./pages/PublicNfcePoints"
 import PublicNfcePointsEnviar from "./pages/PublicNfcePointsEnviar"
@@ -55,6 +56,7 @@ export default function App() {
         <Route path="/precos" element={<Pricing />} />
         <Route path="/precos/como-comecar" element={<PricingPlanFollowup />} />
         <Route path="/precos/cadastro-lojista" element={<MerchantSignup />} />
+        <Route path="/precos/verificar-email" element={<VerifyMerchantEmail />} />
         <Route
           path="/login"
           element={

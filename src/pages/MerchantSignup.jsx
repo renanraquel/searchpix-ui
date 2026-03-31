@@ -47,6 +47,7 @@ export default function MerchantSignup() {
   const [fullName, setFullName] = useState("")
   const [cpf, setCpf] = useState("")
   const [phone, setPhone] = useState("")
+  const [email, setEmail] = useState("")
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
 
@@ -66,8 +67,12 @@ export default function MerchantSignup() {
     setError("")
     const cpfDigits = cpf.replace(/\D/g, "")
     const phoneDigits = phone.replace(/\D/g, "")
-    if (!tenantName.trim() || !tenantSlug.trim() || !fullName.trim() || !username.trim() || !password) {
+    if (!tenantName.trim() || !tenantSlug.trim() || !fullName.trim() || !email.trim() || !username.trim() || !password) {
       setError("Preencha todos os campos obrigatórios.")
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("Informe um e-mail válido.")
       return
     }
     if (!isValidCpf(cpfDigits)) {
@@ -95,6 +100,7 @@ export default function MerchantSignup() {
           full_name: fullName.trim(),
           cpf: cpfDigits,
           phone: phoneDigits,
+          email: email.trim().toLowerCase(),
         }),
       })
       if (res.status === 201) {
@@ -140,7 +146,7 @@ export default function MerchantSignup() {
             {success ? (
               <div className="mt-6 space-y-4">
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-950">
-                  Cadastro concluído. Você já pode entrar no painel com seu login e senha.
+                  Cadastro concluído. Enviamos um link para confirmar seu e-mail. Após confirmar, você poderá entrar no painel.
                 </div>
                 <Link
                   to="/login"
@@ -194,6 +200,21 @@ export default function MerchantSignup() {
                     placeholder="(00) 00000-0000"
                     maxLength={16}
                     inputMode="tel"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="ms-email" className="mb-1 block text-sm font-semibold text-slate-800">
+                    E-mail
+                  </label>
+                  <input
+                    id="ms-email"
+                    type="email"
+                    className="w-full rounded-xl border-2 border-slate-300 px-3 py-2.5 text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                    placeholder="voce@empresa.com"
                     required
                   />
                 </div>
