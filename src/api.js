@@ -23,6 +23,14 @@ export function getPontosNotaPublicUrl(tenantSlug) {
   return `${o}/pontos-nota?tenant=${encodeURIComponent(tenantSlug)}`
 }
 
+/** URL da tela pública do carrossel (TV) para divulgação. */
+export function getCarouselPublicUrl(tenantSlug) {
+  if (!tenantSlug) return ""
+  const o = getPublicUiOrigin()
+  if (!o) return ""
+  return `${o}/carrossel-tv?tenant=${encodeURIComponent(tenantSlug)}`
+}
+
 export function getToken() {
   return localStorage.getItem("token")
 }

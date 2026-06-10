@@ -19,6 +19,8 @@ import VerifyMerchantEmail from "./pages/VerifyMerchantEmail"
 import PublicRegister from "./pages/PublicRegister"
 import PublicNfcePoints from "./pages/PublicNfcePoints"
 import PublicNfcePointsEnviar from "./pages/PublicNfcePointsEnviar"
+import CarouselManage from "./pages/CarouselManage"
+import PublicCarousel from "./pages/PublicCarousel"
 
 function PrivateRoute({ children }) {
   const token = getToken()
@@ -57,6 +59,7 @@ export default function App() {
         <Route path="/precos/como-comecar" element={<PricingPlanFollowup />} />
         <Route path="/precos/cadastro-lojista" element={<MerchantSignup />} />
         <Route path="/precos/verificar-email" element={<VerifyMerchantEmail />} />
+        <Route path="/carrossel-tv" element={<PublicCarousel />} />
         <Route
           path="/login"
           element={
@@ -83,6 +86,7 @@ export default function App() {
           <Route path="parametros-sistema" element={<SystemParams />} />
           <Route path="resgates" element={<Redemptions />} />
           <Route path="resgates/efetuar" element={<EfetuarResgate />} />
+          <Route path="carrossel" element={<CarouselManage />} />
         </Route>
         <Route path="*" element={<NavigateToAppHome />} />
       </Routes>
