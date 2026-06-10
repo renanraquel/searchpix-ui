@@ -17,14 +17,59 @@ export default function PublicCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [needsTap, setNeedsTap] = useState(false)
+  const [mediaLoading, setMediaLoading] = useState(false)
   const timerRef = useRef(null)
   const videoRef = useRef(null)
+  const watchdogRef = useRef(null)
 
   const currentItem = items.length > 0 ? items[currentIndex % items.length] : null
 
   const goNext = useCallback(() => {
+    setNeedsTap(false)
+    setMediaLoading(false)
     setCurrentIndex((i) => (items.length ? (i + 1) % items.length : 0))
   }, [items.length])
+
+  const clearWatchdog = useCallback(() => {
+    if (watchdogRef.current) {
+      clearTimeout(watchdogRef.current)
+      watchdogRef.current = null
+    }
+  }, [])
+
+  const startVideoWatchdog = useCallback(() => {
+    clearWatchdog()
+    watchdogRef.current = setTimeout(() => {
+      const v = videoRef.current
+      if (!v || v.ended) return
+      if (v.paused || v.readyState < 2) {
+        goNext()
+      }
+    }, 15000)
+  }, [clearWatchdog, goNext])
+
+  const tryPlayVideo = useCallback(async () => {
+    const v = videoRef.current
+    if (!v) return
+    try {
+      await v.play()
+      setNeedsTap(false)
+      setMediaLoading(false)
+      startVideoWatchdog()
+    } catch {
+      setNeedsTap(true)
+      setMediaLoading(false)
+    }
+  }, [startVideoWatchdog])
+
+  const handleStart = useCallback(() => {
+    if (currentItem?.media_type === "video") {
+      tryPlayVideo()
+      return
+    }
+    setNeedsTap(false)
+  }, [currentItem, tryPlayVideo])
 
   useEffect(() => {
     if (!tenantSlug) {
@@ -63,23 +108,17 @@ export default function PublicCarousel() {
       clearTimeout(timerRef.current)
       timerRef.current = null
     }
+    clearWatchdog()
+    setNeedsTap(false)
+    setMediaLoading(Boolean(currentItem))
     if (!currentItem || currentItem.media_type === "video") return undefined
     timerRef.current = setTimeout(goNext, Math.max(1, imageDuration) * 1000)
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
     }
-  }, [currentItem, imageDuration, goNext])
+  }, [currentItem, imageDuration, goNext, clearWatchdog])
 
-  useEffect(() => {
-    const v = videoRef.current
-    if (!v || !currentItem || currentItem.media_type !== "video") return undefined
-    v.currentTime = 0
-    const playPromise = v.play()
-    if (playPromise?.catch) {
-      playPromise.catch(() => {})
-    }
-    return undefined
-  }, [currentItem])
+  useEffect(() => () => clearWatchdog(), [clearWatchdog])
 
   if (loading) {
     return (
@@ -108,7 +147,7 @@ export default function PublicCarousel() {
   const mediaSrc = resolveMediaUrl(currentItem.media_url)
 
   return (
-    <div className="carousel-tv-root">
+    <div className="carousel-tv-root" onClick={needsTap ? handleStart : undefined}>
       {currentItem.media_type === "video" ? (
         <video
           key={currentItem.id}
@@ -118,7 +157,15 @@ export default function PublicCarousel() {
           autoPlay
           muted
           playsInline
+          preload="auto"
+          onLoadedData={() => tryPlayVideo()}
+          onPlaying={() => {
+            setMediaLoading(false)
+            clearWatchdog()
+          }}
+          onWaiting={() => setMediaLoading(true)}
           onEnded={goNext}
+          onError={goNext}
         />
       ) : (
         <img
@@ -126,17 +173,42 @@ export default function PublicCarousel() {
           className="carousel-tv-media"
           src={mediaSrc}
           alt=""
+          onLoad={() => setMediaLoading(false)}
+          onError={goNext}
         />
       )}
+      {mediaLoading && !needsTap && (
+        <div className="carousel-tv-overlay" aria-hidden="true">
+          <p>Carregando…</p>
+        </div>
+      )}
+      {needsTap && (
+        <div className="carousel-tv-overlay carousel-tv-tap">
+          <p>Toque para iniciar</p>
+        </div>
+      )}
       <style>{`
+        html, body, #root {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          background: #000;
+        }
         .carousel-tv-root {
           position: fixed;
           inset: 0;
+          z-index: 9999;
+          width: 100%;
+          height: 100%;
+          height: 100dvh;
           background: #000;
           display: flex;
           align-items: center;
           justify-content: center;
           overflow: hidden;
+          -webkit-tap-highlight-color: transparent;
         }
         .carousel-tv-media {
           max-width: 100%;
@@ -144,12 +216,30 @@ export default function PublicCarousel() {
           width: 100%;
           height: 100%;
           object-fit: contain;
+          background: #000;
+        }
+        .carousel-tv-overlay {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(0, 0, 0, 0.35);
+          color: #fff;
+          font-family: system-ui, -apple-system, sans-serif;
+          font-size: 1.1rem;
+          pointer-events: none;
+        }
+        .carousel-tv-tap {
+          background: rgba(0, 0, 0, 0.65);
+          pointer-events: auto;
+          cursor: pointer;
         }
         .carousel-tv-loading,
         .carousel-tv-error,
         .carousel-tv-empty {
           color: #ccc;
-          font-family: system-ui, sans-serif;
+          font-family: system-ui, -apple-system, sans-serif;
           font-size: 1.25rem;
         }
       `}</style>
