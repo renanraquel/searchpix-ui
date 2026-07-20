@@ -3,7 +3,9 @@ import { fetchApi, apiUrl, getToken, getTenant, getCarouselPublicUrl } from "../
 
 function mediaPreviewUrl(item, tenantSlug) {
   if (!item?.id || !tenantSlug) return ""
-  return apiUrl(`/api/public/carousel/media?id=${encodeURIComponent(item.id)}&tenant=${encodeURIComponent(tenantSlug)}`)
+  const updatedAt = item.updated_at ? Math.floor(new Date(item.updated_at).getTime() / 1000) : 0
+  const v = updatedAt > 0 ? `&v=${updatedAt}` : ""
+  return apiUrl(`/api/public/carousel/media?id=${encodeURIComponent(item.id)}&tenant=${encodeURIComponent(tenantSlug)}${v}`)
 }
 
 export default function CarouselManage() {

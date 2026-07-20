@@ -8,6 +8,13 @@ function resolveMediaUrl(path) {
   return apiUrl(path)
 }
 
+function clearMediaCache(cache) {
+  for (const url of cache.values()) {
+    URL.revokeObjectURL(url)
+  }
+  cache.clear()
+}
+
 export default function PublicCarousel() {
   const [searchParams] = useSearchParams()
   const tenantSlug = (searchParams.get("tenant") || "").trim()
@@ -19,9 +26,11 @@ export default function PublicCarousel() {
   const [error, setError] = useState("")
   const [needsTap, setNeedsTap] = useState(false)
   const [mediaLoading, setMediaLoading] = useState(false)
+  const [mediaSrc, setMediaSrc] = useState("")
   const timerRef = useRef(null)
   const videoRef = useRef(null)
   const watchdogRef = useRef(null)
+  const mediaCacheRef = useRef(new Map())
 
   const currentItem = items.length > 0 ? items[currentIndex % items.length] : null
 
@@ -36,6 +45,19 @@ export default function PublicCarousel() {
       clearTimeout(watchdogRef.current)
       watchdogRef.current = null
     }
+  }, [])
+
+  const cacheMediaBlob = useCallback(async (item) => {
+    const cached = mediaCacheRef.current.get(item.id)
+    if (cached) return cached
+
+    const url = resolveMediaUrl(item.media_url)
+    const res = await fetch(url)
+    if (!res.ok) throw new Error("Falha ao carregar mídia")
+    const blob = await res.blob()
+    const blobUrl = URL.createObjectURL(blob)
+    mediaCacheRef.current.set(item.id, blobUrl)
+    return blobUrl
   }, [])
 
   const startVideoWatchdog = useCallback(() => {
@@ -86,6 +108,8 @@ export default function PublicCarousel() {
     async function load() {
       setLoading(true)
       setError("")
+      clearMediaCache(mediaCacheRef.current)
+      setMediaSrc("")
       try {
         const res = await fetch(apiUrl(`/api/public/carousel?tenant=${encodeURIComponent(tenantSlug)}`))
         if (!res.ok) throw new Error(await res.text())
@@ -104,21 +128,65 @@ export default function PublicCarousel() {
   }, [tenantSlug])
 
   useEffect(() => {
+    if (!currentItem) {
+      setMediaSrc("")
+      return undefined
+    }
+
+    let cancelled = false
+
+    async function loadCurrent() {
+      const cached = mediaCacheRef.current.get(currentItem.id)
+      if (cached) {
+        setMediaSrc(cached)
+        setMediaLoading(currentItem.media_type === "video")
+        return
+      }
+
+      setMediaLoading(true)
+      try {
+        const blobUrl = await cacheMediaBlob(currentItem)
+        if (!cancelled) setMediaSrc(blobUrl)
+      } catch {
+        if (!cancelled) goNext()
+      }
+    }
+
+    loadCurrent()
+    return () => {
+      cancelled = true
+    }
+  }, [currentItem, cacheMediaBlob, goNext])
+
+  useEffect(() => {
+    if (items.length < 2 || !currentItem) return undefined
+    const nextItem = items[(currentIndex + 1) % items.length]
+    if (!nextItem || mediaCacheRef.current.has(nextItem.id)) return undefined
+
+    cacheMediaBlob(nextItem).catch(() => {})
+    return undefined
+  }, [currentIndex, items, currentItem, cacheMediaBlob])
+
+  useEffect(() => {
     if (timerRef.current) {
       clearTimeout(timerRef.current)
       timerRef.current = null
     }
     clearWatchdog()
     setNeedsTap(false)
-    setMediaLoading(Boolean(currentItem))
     if (!currentItem || currentItem.media_type === "video") return undefined
+    if (!mediaSrc) return undefined
+    setMediaLoading(false)
     timerRef.current = setTimeout(goNext, Math.max(1, imageDuration) * 1000)
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
     }
-  }, [currentItem, imageDuration, goNext, clearWatchdog])
+  }, [currentItem, imageDuration, goNext, clearWatchdog, mediaSrc])
 
-  useEffect(() => () => clearWatchdog(), [clearWatchdog])
+  useEffect(() => () => {
+    clearWatchdog()
+    clearMediaCache(mediaCacheRef.current)
+  }, [clearWatchdog])
 
   if (loading) {
     return (
@@ -144,11 +212,9 @@ export default function PublicCarousel() {
     )
   }
 
-  const mediaSrc = resolveMediaUrl(currentItem.media_url)
-
   return (
     <div className="carousel-tv-root" onClick={needsTap ? handleStart : undefined}>
-      {currentItem.media_type === "video" ? (
+      {mediaSrc && currentItem.media_type === "video" ? (
         <video
           key={currentItem.id}
           ref={videoRef}
@@ -157,7 +223,7 @@ export default function PublicCarousel() {
           autoPlay
           muted
           playsInline
-          preload="auto"
+          preload="metadata"
           onLoadedData={() => tryPlayVideo()}
           onPlaying={() => {
             setMediaLoading(false)
@@ -167,7 +233,7 @@ export default function PublicCarousel() {
           onEnded={goNext}
           onError={goNext}
         />
-      ) : (
+      ) : mediaSrc ? (
         <img
           key={currentItem.id}
           className="carousel-tv-media"
@@ -176,7 +242,7 @@ export default function PublicCarousel() {
           onLoad={() => setMediaLoading(false)}
           onError={goNext}
         />
-      )}
+      ) : null}
       {mediaLoading && !needsTap && (
         <div className="carousel-tv-overlay" aria-hidden="true">
           <p>Carregando…</p>
