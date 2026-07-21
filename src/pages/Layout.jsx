@@ -143,9 +143,6 @@ export default function Layout({ onLogout }) {
             <SidebarLink to="/parametros-sistema" icon="mdi-settings" onNavigate={closeMobileMenu}>
               Parâmetros sistema
             </SidebarLink>
-            <SidebarLink to="/carrossel" icon="mdi-television" onNavigate={closeMobileMenu}>
-              Carrossel Fotos/Vídeos
-            </SidebarLink>
             <SidebarLink to="/resgates" end icon="mdi-magnify" onNavigate={closeMobileMenu}>
               Pesquisa de resgates
             </SidebarLink>
