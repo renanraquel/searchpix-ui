@@ -229,7 +229,13 @@ export default function DesignacoesSemana() {
 
   const candidatosVisiveis = mostrarInelegiveis ? candidatos : candidatos.filter((c) => c.elegivel)
   const sugestoesIds = new Set(
-    candidatosVisiveis.filter((c) => c.elegivel).slice(0, 3).map((c) => c.id)
+    candidatosVisiveis
+      .filter((c) => c.elegivel && !c.somente_manual)
+      .slice(0, 3)
+      .map((c) => c.id)
+  )
+  const rotacaoMesmoTipo = ["presidente", "tesouros", "estudo_biblico"].includes(
+    assignParte?.tipo_codigo
   )
 
   const tiposVariaveis = tipos.filter(
@@ -516,8 +522,10 @@ export default function DesignacoesSemana() {
                       </div>
                     </div>
                     <p className="text-muted small mb-3">
-                      Lista ordenada por sugestão: quem está há mais tempo sem designação (ou nunca designado) aparece
-                      primeiro. Os 3 primeiros elegíveis são destacados.
+                      {rotacaoMesmoTipo
+                        ? "Rotação desta parte: quem fez esta mesma parte há mais tempo (ou nunca fez) aparece primeiro. Quem a fez na semana anterior fica no fim da prioridade."
+                        : "Lista ordenada por sugestão: quem está há mais tempo sem designação (ou nunca designado) aparece primeiro."}{" "}
+                      Os 3 primeiros elegíveis são destacados.
                     </p>
                     {candidatosVisiveis.length === 0 && (
                       <p className="text-muted">
@@ -531,7 +539,7 @@ export default function DesignacoesSemana() {
                           <tr>
                             <th>Nome</th>
                             <th>Tipo</th>
-                            <th>8 sem.</th>
+                            <th>{rotacaoMesmoTipo ? "Vezes no ciclo (7 sem.)" : "Partes em 8 sem."}</th>
                             <th>Sugestão / última</th>
                             <th />
                           </tr>
@@ -543,6 +551,9 @@ export default function DesignacoesSemana() {
                                 {c.nome}
                                 {sugestoesIds.has(c.id) && (
                                   <span className="badge badge-success ml-2">Sugestão</span>
+                                )}
+                                {c.somente_manual && (
+                                  <span className="badge badge-warning ml-2">Sua decisão</span>
                                 )}
                                 {!c.elegivel && (
                                   <div className="small text-danger">{c.motivo_inelegivel}</div>
