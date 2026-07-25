@@ -119,6 +119,8 @@ export default function DesignacoesIrmaos() {
 
   const showServoFlags = form.tipo === "servo" || form.tipo === "anciao"
   const showAnciaoFlags = form.tipo === "anciao"
+  const showOracaoInicial =
+    form.sexo === "M" && (form.tipo === "estudante" || form.tipo === "servo" || form.tipo === "anciao")
 
   return (
     <div>
@@ -212,34 +214,34 @@ export default function DesignacoesIrmaos() {
                 </label>
               </div>
               {showServoFlags && (
-                <>
-                  <div className="form-check">
-                    <label className="form-check-label">
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        checked={form.qualificado_tesouros}
-                        onChange={(e) => setForm({ ...form, qualificado_tesouros: e.target.checked })}
-                      />{" "}
-                      Qualificado para Tesouros da Palavra
-                      <i className="input-helper" />
-                    </label>
-                  </div>
-                  <div className="form-check">
-                    <label className="form-check-label">
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        checked={form.disponivel_oracao_inicial}
-                        onChange={(e) =>
-                          setForm({ ...form, disponivel_oracao_inicial: e.target.checked })
-                        }
-                      />{" "}
-                      Disponível para oração inicial (chega cedo)
-                      <i className="input-helper" />
-                    </label>
-                  </div>
-                </>
+                <div className="form-check">
+                  <label className="form-check-label">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      checked={form.qualificado_tesouros}
+                      onChange={(e) => setForm({ ...form, qualificado_tesouros: e.target.checked })}
+                    />{" "}
+                    Qualificado para Tesouros da Palavra
+                    <i className="input-helper" />
+                  </label>
+                </div>
+              )}
+              {showOracaoInicial && (
+                <div className="form-check">
+                  <label className="form-check-label">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      checked={form.disponivel_oracao_inicial}
+                      onChange={(e) =>
+                        setForm({ ...form, disponivel_oracao_inicial: e.target.checked })
+                      }
+                    />{" "}
+                    Disponível para oração inicial (chega cedo)
+                    <i className="input-helper" />
+                  </label>
+                </div>
               )}
               {showAnciaoFlags && (
                 <div className="form-check">

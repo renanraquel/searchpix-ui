@@ -228,6 +228,9 @@ export default function DesignacoesSemana() {
   }
 
   const candidatosVisiveis = mostrarInelegiveis ? candidatos : candidatos.filter((c) => c.elegivel)
+  const sugestoesIds = new Set(
+    candidatosVisiveis.filter((c) => c.elegivel).slice(0, 3).map((c) => c.id)
+  )
 
   const tiposVariaveis = tipos.filter(
     (t) =>
@@ -512,6 +515,10 @@ export default function DesignacoesSemana() {
                         </label>
                       </div>
                     </div>
+                    <p className="text-muted small mb-3">
+                      Lista ordenada por sugestão: quem está há mais tempo sem designação (ou nunca designado) aparece
+                      primeiro. Os 3 primeiros elegíveis são destacados.
+                    </p>
                     {candidatosVisiveis.length === 0 && (
                       <p className="text-muted">
                         Nenhum irmão disponível para esta parte. Verifique o cadastro ou marque a opção acima para ver
@@ -525,7 +532,7 @@ export default function DesignacoesSemana() {
                             <th>Nome</th>
                             <th>Tipo</th>
                             <th>8 sem.</th>
-                            <th>Alerta</th>
+                            <th>Sugestão / última</th>
                             <th />
                           </tr>
                         </thead>
@@ -534,6 +541,9 @@ export default function DesignacoesSemana() {
                             <tr key={c.id} className={c.elegivel ? "" : "table-secondary"}>
                               <td>
                                 {c.nome}
+                                {sugestoesIds.has(c.id) && (
+                                  <span className="badge badge-success ml-2">Sugestão</span>
+                                )}
                                 {!c.elegivel && (
                                   <div className="small text-danger">{c.motivo_inelegivel}</div>
                                 )}
