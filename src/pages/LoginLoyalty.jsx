@@ -30,7 +30,7 @@ export default function LoginLoyalty({ onLogin }) {
         throw new Error(text || "Usuário ou senha inválidos")
       }
       const data = await res.json()
-      setAuth(data.token, data.tenant)
+      setAuth(data.token, data.tenant, data.user || null)
       onLogin?.()
     } catch (err) {
       setError(err.message || "Erro ao fazer login")

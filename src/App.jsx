@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
-import { getToken, getTenant } from "./api"
+import { getToken, getTenant, isAdmin } from "./api"
 import { isPixModuleEnabledForTenantSlug } from "./constants/pixModule"
 import LoginLoyalty from "./pages/LoginLoyalty"
 import Layout from "./pages/Layout"
@@ -21,10 +21,18 @@ import PublicNfcePoints from "./pages/PublicNfcePoints"
 import PublicNfcePointsEnviar from "./pages/PublicNfcePointsEnviar"
 import CarouselManage from "./pages/CarouselManage"
 import PublicCarousel from "./pages/PublicCarousel"
+import DesignacoesIrmaos from "./pages/DesignacoesIrmaos"
+import DesignacoesSemana from "./pages/DesignacoesSemana"
+import DesignacoesLembretes from "./pages/DesignacoesLembretes"
 
 function PrivateRoute({ children }) {
   const token = getToken()
   if (!token) return <Navigate to="/login" replace />
+  return children
+}
+
+function AdminRoute({ children }) {
+  if (!isAdmin()) return <Navigate to="/produtos" replace />
   return children
 }
 
@@ -87,6 +95,30 @@ export default function App() {
           <Route path="resgates" element={<Redemptions />} />
           <Route path="resgates/efetuar" element={<EfetuarResgate />} />
           <Route path="carrossel" element={<CarouselManage />} />
+          <Route
+            path="designacoes/irmaos"
+            element={
+              <AdminRoute>
+                <DesignacoesIrmaos />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="designacoes"
+            element={
+              <AdminRoute>
+                <DesignacoesSemana />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="designacoes/lembretes"
+            element={
+              <AdminRoute>
+                <DesignacoesLembretes />
+              </AdminRoute>
+            }
+          />
         </Route>
         <Route path="*" element={<NavigateToAppHome />} />
       </Routes>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom"
-import { setAuth, getTenant, getPontosNotaPublicUrl } from "../api"
+import { setAuth, getTenant, getPontosNotaPublicUrl, isAdmin } from "../api"
 import { isPixModuleEnabledForTenantSlug } from "../constants/pixModule"
 
 function SidebarLink({ to, end, icon, children, onNavigate }) {
@@ -26,6 +26,7 @@ export default function Layout({ onLogout }) {
   const location = useLocation()
   const tenant = getTenant()
   const showPixModule = isPixModuleEnabledForTenantSlug(tenant?.slug)
+  const showDesignacoes = isAdmin()
   const homePath = showPixModule ? "/pix" : "/produtos"
   const pontosNotaDivulgeUrl = tenant?.slug ? getPontosNotaPublicUrl(tenant.slug) : ""
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -56,7 +57,7 @@ export default function Layout({ onLogout }) {
   }
 
   function logout() {
-    setAuth(null, null)
+    setAuth(null, null, null)
     onLogout?.()
     navigate("/login")
   }
@@ -149,6 +150,20 @@ export default function Layout({ onLogout }) {
             <SidebarLink to="/resgates/efetuar" icon="mdi-gift" onNavigate={closeMobileMenu}>
               Resgatar produto
             </SidebarLink>
+            {showDesignacoes && (
+              <>
+                <li className="nav-item nav-category">Designações</li>
+                <SidebarLink to="/designacoes/irmaos" icon="mdi-account-group" onNavigate={closeMobileMenu}>
+                  Irmãos
+                </SidebarLink>
+                <SidebarLink to="/designacoes" icon="mdi-calendar-check" onNavigate={closeMobileMenu}>
+                  Semana
+                </SidebarLink>
+                <SidebarLink to="/designacoes/lembretes" icon="mdi-bell-ring" onNavigate={closeMobileMenu}>
+                  Lembretes
+                </SidebarLink>
+              </>
+            )}
           </ul>
         </nav>
 

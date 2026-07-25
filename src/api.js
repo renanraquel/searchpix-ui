@@ -44,11 +44,30 @@ export function getTenant() {
   }
 }
 
-export function setAuth(token, tenant) {
+export function getUser() {
+  try {
+    const u = localStorage.getItem("user")
+    return u ? JSON.parse(u) : null
+  } catch {
+    return null
+  }
+}
+
+export function getRole() {
+  return getUser()?.role || "tenant"
+}
+
+export function isAdmin() {
+  return getRole() === "admin"
+}
+
+export function setAuth(token, tenant, user = null) {
   if (token) localStorage.setItem("token", token)
   else localStorage.removeItem("token")
   if (tenant) localStorage.setItem("tenant", JSON.stringify(tenant))
   else localStorage.removeItem("tenant")
+  if (user) localStorage.setItem("user", JSON.stringify(user))
+  else localStorage.removeItem("user")
 }
 
 export async function fetchApi(path, options = {}) {
