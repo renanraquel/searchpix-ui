@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { fetchApi } from "../api"
+import { openWhatsApp, copyToClipboard } from "../utils/whatsapp"
 
 function todayISO() {
   const d = new Date()
@@ -7,15 +8,6 @@ function todayISO() {
   const m = String(d.getMonth() + 1).padStart(2, "0")
   const day = String(d.getDate()).padStart(2, "0")
   return `${y}-${m}-${day}`
-}
-
-async function copyText(text) {
-  try {
-    await navigator.clipboard.writeText(text)
-    return true
-  } catch {
-    return false
-  }
 }
 
 export default function DesignacoesSemana() {
@@ -32,6 +24,7 @@ export default function DesignacoesSemana() {
   const [candidatos, setCandidatos] = useState([])
   const [assignParte, setAssignParte] = useState(null)
   const [assignPapel, setAssignPapel] = useState("dono")
+  const [mostrarInelegiveis, setMostrarInelegiveis] = useState(false)
 
   const loadSemanas = useCallback(async () => {
     const res = await fetchApi("/api/desig/semanas")
@@ -166,6 +159,7 @@ export default function DesignacoesSemana() {
   async function abrirAssign(parte, papel) {
     setAssignParte(parte)
     setAssignPapel(papel)
+    setMostrarInelegiveis(false)
     setError("")
     try {
       const res = await fetchApi(`/api/desig/candidatos?parte_id=${parte.id}&papel=${papel}`)
@@ -211,13 +205,18 @@ export default function DesignacoesSemana() {
     }
   }
 
-  async function copiarWhatsApp(parteId, papel) {
+  async function enviarWhatsApp(parteId, papel) {
     try {
       const res = await fetchApi(`/api/desig/whatsapp?parte_id=${parteId}&papel=${papel}`)
       if (!res.ok) throw new Error(await res.text())
       const data = await res.json()
-      const ok = await copyText(data.mensagem || "")
-      setSuccess(ok ? "Mensagem copiada para a área de transferência." : data.mensagem)
+      await copyToClipboard(data.mensagem || "")
+      openWhatsApp(data.telefone, data.mensagem)
+      setSuccess(
+        data.telefone
+          ? `WhatsApp aberto para ${data.pessoa_nome}. A mensagem também foi copiada.`
+          : `${data.pessoa_nome} não tem telefone cadastrado. Escolha o contato no WhatsApp (mensagem já preenchida).`
+      )
     } catch (e) {
       setError(e.message)
     }
@@ -227,6 +226,8 @@ export default function DesignacoesSemana() {
     const d = (parte.designacoes || []).find((x) => x.papel === papel)
     return d?.pessoa_nome || ""
   }
+
+  const candidatosVisiveis = mostrarInelegiveis ? candidatos : candidatos.filter((c) => c.elegivel)
 
   const tiposVariaveis = tipos.filter(
     (t) =>
@@ -441,7 +442,7 @@ export default function DesignacoesSemana() {
                                     <button
                                       type="button"
                                       className="btn btn-sm btn-link"
-                                      onClick={() => copiarWhatsApp(parte.id, "dono")}
+                                      onClick={() => enviarWhatsApp(parte.id, "dono")}
                                     >
                                       WhatsApp
                                     </button>
@@ -471,7 +472,7 @@ export default function DesignacoesSemana() {
                                       <button
                                         type="button"
                                         className="btn btn-sm btn-link"
-                                        onClick={() => copiarWhatsApp(parte.id, "ajudante")}
+                                        onClick={() => enviarWhatsApp(parte.id, "ajudante")}
                                       >
                                         WhatsApp
                                       </button>
@@ -494,9 +495,29 @@ export default function DesignacoesSemana() {
                     <h4 className="card-title">
                       Designar {assignPapel} — {assignParte.titulo}
                     </h4>
-                    <button type="button" className="btn btn-sm btn-light mb-3" onClick={() => setAssignParte(null)}>
-                      Fechar
-                    </button>
+                    <div className="d-flex align-items-center mb-3">
+                      <button type="button" className="btn btn-sm btn-light mr-3" onClick={() => setAssignParte(null)}>
+                        Fechar
+                      </button>
+                      <div className="form-check mb-0">
+                        <label className="form-check-label">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            checked={mostrarInelegiveis}
+                            onChange={(e) => setMostrarInelegiveis(e.target.checked)}
+                          />{" "}
+                          Mostrar quem não pode fazer esta parte
+                          <i className="input-helper" />
+                        </label>
+                      </div>
+                    </div>
+                    {candidatosVisiveis.length === 0 && (
+                      <p className="text-muted">
+                        Nenhum irmão disponível para esta parte. Verifique o cadastro ou marque a opção acima para ver
+                        os motivos.
+                      </p>
+                    )}
                     <div className="table-responsive">
                       <table className="table table-sm table-hover">
                         <thead>
@@ -509,7 +530,7 @@ export default function DesignacoesSemana() {
                           </tr>
                         </thead>
                         <tbody>
-                          {candidatos.map((c) => (
+                          {candidatosVisiveis.map((c) => (
                             <tr key={c.id} className={c.elegivel ? "" : "table-secondary"}>
                               <td>
                                 {c.nome}

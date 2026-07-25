@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { fetchApi } from "../api"
+import { openWhatsApp, copyToClipboard } from "../utils/whatsapp"
 
 function todayISO() {
   const d = new Date()
@@ -7,15 +8,6 @@ function todayISO() {
   const m = String(d.getMonth() + 1).padStart(2, "0")
   const day = String(d.getDate()).padStart(2, "0")
   return `${y}-${m}-${day}`
-}
-
-async function copyText(text) {
-  try {
-    await navigator.clipboard.writeText(text)
-    return true
-  } catch {
-    return false
-  }
 }
 
 export default function DesignacoesLembretes() {
@@ -45,8 +37,18 @@ export default function DesignacoesLembretes() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  async function enviar(item) {
+    await copyToClipboard(item.mensagem_whatsapp)
+    openWhatsApp(item.telefone, item.mensagem_whatsapp)
+    setSuccess(
+      item.telefone
+        ? `WhatsApp aberto para ${item.pessoa_nome}. A mensagem também foi copiada.`
+        : `${item.pessoa_nome} não tem telefone cadastrado. Escolha o contato no WhatsApp (mensagem já preenchida).`
+    )
+  }
+
   async function copiar(msg) {
-    const ok = await copyText(msg)
+    const ok = await copyToClipboard(msg)
     setSuccess(ok ? "Mensagem copiada." : msg)
   }
 
@@ -124,10 +126,17 @@ export default function DesignacoesLembretes() {
                             <td className="text-right text-nowrap">
                               <button
                                 type="button"
-                                className="btn btn-sm btn-primary"
+                                className="btn btn-sm btn-primary mr-1"
+                                onClick={() => enviar(item)}
+                              >
+                                Enviar WhatsApp
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline-secondary"
                                 onClick={() => copiar(item.mensagem_whatsapp)}
                               >
-                                Copiar WhatsApp
+                                Copiar
                               </button>
                             </td>
                           </tr>
