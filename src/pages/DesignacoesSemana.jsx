@@ -10,6 +10,62 @@ function todayISO() {
   return `${y}-${m}-${day}`
 }
 
+function nomeDesignadoParte(parte, papel) {
+  const d = (parte.designacoes || []).find((x) => x.papel === papel)
+  return d?.pessoa_nome || ""
+}
+
+/** Monta o texto final das designações da semana. */
+function montarTextoSemana(partes = []) {
+  const ordenadas = [...partes].sort((a, b) => (a.ordem || 0) - (b.ordem || 0))
+  const linhasTesouros = []
+  const linhasMinisterio = []
+  const linhasVida = []
+  const linhasFinais = []
+
+  for (const parte of ordenadas) {
+    const dono = nomeDesignadoParte(parte, "dono")
+    const ajudante = nomeDesignadoParte(parte, "ajudante")
+    const codigo = parte.tipo_codigo || ""
+    const nomes =
+      dono && ajudante ? `${dono} com ${ajudante}` : dono || "(não designado)"
+
+    if (codigo === "oracao_final" || codigo === "estudo_biblico") {
+      linhasFinais.push(`${parte.titulo}: ${nomes}`)
+      continue
+    }
+
+    if (codigo === "vida_crista_extra") {
+      const rotulo = (parte.tema || "").trim() || parte.titulo
+      linhasVida.push(`${rotulo}: ${nomes}`)
+      continue
+    }
+
+    if (
+      [
+        "iniciando_conversas",
+        "cultivando_interesse",
+        "explicando_crencas",
+        "fazendo_discipulos",
+        "discurso",
+      ].includes(codigo)
+    ) {
+      linhasMinisterio.push(`${parte.titulo}: ${nomes}`)
+      continue
+    }
+
+    // oração inicial, presidente, tesouros, joias, leitura, etc.
+    linhasTesouros.push(`${parte.titulo}: ${nomes}`)
+  }
+
+  const blocos = []
+  if (linhasTesouros.length) blocos.push(linhasTesouros.join("\n"))
+  if (linhasMinisterio.length) blocos.push(linhasMinisterio.join("\n"))
+  if (linhasVida.length) blocos.push(linhasVida.join("\n"))
+  if (linhasFinais.length) blocos.push(linhasFinais.join("\n"))
+  return blocos.join("\n\n")
+}
+
 export default function DesignacoesSemana() {
   const [semanas, setSemanas] = useState([])
   const [tipos, setTipos] = useState([])
@@ -25,6 +81,7 @@ export default function DesignacoesSemana() {
   const [assignParte, setAssignParte] = useState(null)
   const [assignPapel, setAssignPapel] = useState("dono")
   const [mostrarInelegiveis, setMostrarInelegiveis] = useState(false)
+  const [textoSemana, setTextoSemana] = useState("")
 
   const loadSemanas = useCallback(async () => {
     const res = await fetchApi("/api/desig/semanas")
@@ -72,6 +129,7 @@ export default function DesignacoesSemana() {
       if (!res.ok) throw new Error(await res.text())
       const data = await res.json()
       setDetalhe(data)
+      setTextoSemana("")
       setSuccess(`Semana ${data.rotulo} pronta (reunião ${data.data_reuniao}).`)
       await loadSemanas()
     } catch (e) {
@@ -85,6 +143,7 @@ export default function DesignacoesSemana() {
     setError("")
     setSuccess("")
     setAssignParte(null)
+    setTextoSemana("")
     try {
       await loadDetalhe(id)
     } catch (e) {
@@ -223,8 +282,24 @@ export default function DesignacoesSemana() {
   }
 
   function nomeDesignado(parte, papel) {
-    const d = (parte.designacoes || []).find((x) => x.papel === papel)
-    return d?.pessoa_nome || ""
+    return nomeDesignadoParte(parte, papel)
+  }
+
+  async function gerarTextoSemana() {
+    if (!detalhe) return
+    const texto = montarTextoSemana(detalhe.partes || [])
+    setTextoSemana(texto)
+    const ok = await copyToClipboard(texto)
+    setSuccess(ok ? "Texto da semana gerado e copiado." : "Texto da semana gerado.")
+  }
+
+  async function copiarTextoSemana() {
+    if (!textoSemana.trim()) {
+      setError("Gere o texto da semana primeiro.")
+      return
+    }
+    const ok = await copyToClipboard(textoSemana)
+    setSuccess(ok ? "Texto copiado." : "Não foi possível copiar. Selecione e copie manualmente.")
   }
 
   const candidatosVisiveis = mostrarInelegiveis ? candidatos : candidatos.filter((c) => c.elegivel)
@@ -338,6 +413,31 @@ export default function DesignacoesSemana() {
                     {detalhe.data_inicio} → {detalhe.data_fim} · Reunião quinta {detalhe.data_reuniao}
                   </p>
 
+                  <div className="mb-4">
+                    <div className="d-flex flex-wrap align-items-center mb-2">
+                      <button type="button" className="btn btn-success mr-2 mb-2" onClick={gerarTextoSemana}>
+                        Gerar texto da semana
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary mb-2"
+                        onClick={copiarTextoSemana}
+                        disabled={!textoSemana}
+                      >
+                        Copiar texto
+                      </button>
+                    </div>
+                    {textoSemana && (
+                      <textarea
+                        className="form-control"
+                        rows={14}
+                        value={textoSemana}
+                        onChange={(e) => setTextoSemana(e.target.value)}
+                        style={{ fontFamily: "monospace", whiteSpace: "pre" }}
+                      />
+                    )}
+                  </div>
+
                   <div className="form-row align-items-end mb-3">
                     <div className="form-group col-md-5 mb-2">
                       <label>Adicionar parte variável</label>
@@ -408,7 +508,6 @@ export default function DesignacoesSemana() {
                             <div className="d-flex justify-content-between">
                               <div>
                                 <strong>{parte.titulo}</strong>
-                                {parte.duracao_min > 0 ? ` (${parte.duracao_min} min)` : ""}
                                 <div className="text-muted small">{parte.categoria}</div>
                                 {parte.tema && <div>{parte.tema}</div>}
                               </div>
