@@ -264,17 +264,17 @@ export default function DesignacoesSemana() {
     }
   }
 
-  async function enviarWhatsApp(parteId, papel) {
+  async function enviarWhatsApp(parteId) {
     try {
-      const res = await fetchApi(`/api/desig/whatsapp?parte_id=${parteId}&papel=${papel}`)
+      const res = await fetchApi(`/api/desig/whatsapp?parte_id=${parteId}`)
       if (!res.ok) throw new Error(await res.text())
       const data = await res.json()
       await copyToClipboard(data.mensagem || "")
       openWhatsApp(data.telefone, data.mensagem)
       setSuccess(
         data.telefone
-          ? `WhatsApp aberto para ${data.pessoa_nome}. A mensagem também foi copiada.`
-          : `${data.pessoa_nome} não tem telefone cadastrado. Escolha o contato no WhatsApp (mensagem já preenchida).`
+          ? `WhatsApp aberto. A mensagem com as instruções também foi copiada.`
+          : `Mensagem copiada. Escolha o contato no WhatsApp (mensagem já preenchida).`
       )
     } catch (e) {
       setError(e.message)
@@ -539,26 +539,17 @@ export default function DesignacoesSemana() {
                                   {dono ? "Trocar" : "Designar"}
                                 </button>
                                 {dono && (
-                                  <>
-                                    <button
-                                      type="button"
-                                      className="btn btn-sm btn-link"
-                                      onClick={() => limparDesignacao(parte.id, "dono")}
-                                    >
-                                      Limpar
-                                    </button>
-                                    <button
-                                      type="button"
-                                      className="btn btn-sm btn-link"
-                                      onClick={() => enviarWhatsApp(parte.id, "dono")}
-                                    >
-                                      WhatsApp
-                                    </button>
-                                  </>
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-link"
+                                    onClick={() => limparDesignacao(parte.id, "dono")}
+                                  >
+                                    Limpar
+                                  </button>
                                 )}
                               </div>
                               {parte.permite_ajudante && (
-                                <div>
+                                <div className="mb-1">
                                   <strong>Ajudante:</strong>{" "}
                                   {ajudante || <em className="text-muted">não designado</em>}{" "}
                                   <button
@@ -569,24 +560,24 @@ export default function DesignacoesSemana() {
                                     {ajudante ? "Trocar" : "Designar"}
                                   </button>
                                   {ajudante && (
-                                    <>
-                                      <button
-                                        type="button"
-                                        className="btn btn-sm btn-link"
-                                        onClick={() => limparDesignacao(parte.id, "ajudante")}
-                                      >
-                                        Limpar
-                                      </button>
-                                      <button
-                                        type="button"
-                                        className="btn btn-sm btn-link"
-                                        onClick={() => enviarWhatsApp(parte.id, "ajudante")}
-                                      >
-                                        WhatsApp
-                                      </button>
-                                    </>
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm btn-link"
+                                      onClick={() => limparDesignacao(parte.id, "ajudante")}
+                                    >
+                                      Limpar
+                                    </button>
                                   )}
                                 </div>
+                              )}
+                              {dono && (!parte.permite_ajudante || ajudante) && (
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-success"
+                                  onClick={() => enviarWhatsApp(parte.id)}
+                                >
+                                  WhatsApp
+                                </button>
                               )}
                             </div>
                           </>
