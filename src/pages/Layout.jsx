@@ -150,6 +150,9 @@ export default function Layout({ onLogout }) {
             <SidebarLink to="/resgates/efetuar" icon="mdi-gift" onNavigate={closeMobileMenu}>
               Resgatar produto
             </SidebarLink>
+            <SidebarLink to="/carrossel" icon="mdi-view-carousel" onNavigate={closeMobileMenu}>
+              Carrossel
+            </SidebarLink>
             {showDesignacoes && (
               <>
                 <li className="nav-item nav-category">Designações</li>
