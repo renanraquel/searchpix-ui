@@ -2,6 +2,10 @@ import { useState, useEffect } from "react"
 import { fetchApi, apiUrl, getToken, getTenant, getCarouselPublicUrl } from "../api"
 
 function mediaPreviewUrl(item, tenantSlug) {
+  if (!item) return ""
+  if (item.media_url && (item.media_url.startsWith("http://") || item.media_url.startsWith("https://"))) {
+    return item.media_url
+  }
   if (!item?.id || !tenantSlug) return ""
   const updatedAt = item.updated_at ? Math.floor(new Date(item.updated_at).getTime() / 1000) : 0
   const v = updatedAt > 0 ? `&v=${updatedAt}` : ""
