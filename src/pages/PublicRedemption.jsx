@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react"
 import { Link, useSearchParams } from "react-router-dom"
-import { apiUrl } from "../api"
+import { apiUrl, mediaSrc } from "../api"
 import { PublicProgramFooterBootstrap } from "../components/public/PublicProgramFooter"
 
 const REDEMPTIONS_PAGE_SIZE = 5
@@ -71,7 +71,7 @@ export default function PublicRedemption() {
     load(tenantSlug, raw)
   }
 
-  const backgroundUrl = data?.tenant?.background_image_url ? apiUrl(data.tenant.background_image_url) : null
+  const backgroundUrl = data?.tenant?.background_image_url ? mediaSrc(data.tenant.background_image_url) : null
 
   const groupedProducts = useMemo(() => {
     const products = data?.products || []
@@ -275,7 +275,7 @@ export default function PublicRedemption() {
                             {p.image_url && (
                               <img
                                 loading="lazy"
-                                src={p.image_url.startsWith("http") ? p.image_url : apiUrl(p.image_url)}
+                                src={mediaSrc(p.image_url)}
                                 alt=""
                                 className="rounded mr-3 mb-2 mb-md-0"
                                 style={{ width: 80, height: 80, objectFit: "cover" }}

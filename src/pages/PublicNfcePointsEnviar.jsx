@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import QrScanner from "qr-scanner"
-import { apiUrl } from "../api"
+import { apiUrl, mediaSrc } from "../api"
 import { PublicProgramFooterBootstrap } from "../components/public/PublicProgramFooter"
 import "../styles/tailwind-pontos-nota.css"
 
@@ -80,7 +80,7 @@ export default function PublicNfcePointsEnviar() {
         const data = await res.json()
         if (cancelled) return
         const bg = data?.tenant?.background_image_url
-        setBackgroundUrl(bg ? apiUrl(bg) : null)
+        setBackgroundUrl(bg ? mediaSrc(bg) : null)
       } catch {
         if (!cancelled) setBackgroundUrl(null)
       }

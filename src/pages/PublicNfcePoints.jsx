@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import { User, Receipt, Gift, Sparkles } from "lucide-react"
-import { apiUrl, trackPublicPageVisit } from "../api"
+import { apiUrl, trackPublicPageVisit, mediaSrc } from "../api"
 import LoyaltyStepCard from "../components/pontos-nota/LoyaltyStepCard"
 import "../styles/tailwind-pontos-nota.css"
 
@@ -56,7 +56,7 @@ export default function PublicNfcePoints() {
         setTenantBranding({
           slug: tenantSlug,
           name,
-          backgroundUrl: bg ? apiUrl(bg) : null,
+          backgroundUrl: bg ? mediaSrc(bg) : null,
         })
       } catch {
         if (!cancelled) setTenantBranding({ slug: tenantSlug, name: "", backgroundUrl: null })

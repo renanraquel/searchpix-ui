@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react"
-import { fetchApi, apiUrl } from "../api"
+import { fetchApi, mediaSrc } from "../api"
 
 function maskCPF(v) {
   const n = String(v).replace(/\D/g, "").slice(0, 11)
@@ -350,7 +350,7 @@ export default function EfetuarResgate() {
                           {product.image_url ? (
                             <img
                               loading="lazy"
-                              src={product.image_url.startsWith("http") ? product.image_url : apiUrl(product.image_url)}
+                              src={mediaSrc(product.image_url)}
                               alt=""
                               className="rounded mr-3"
                               style={{ width: 56, height: 56, objectFit: "cover" }}

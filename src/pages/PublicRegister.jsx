@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
-import { apiUrl } from "../api"
+import { apiUrl, mediaSrc } from "../api"
 import { PublicProgramFooterBootstrap } from "../components/public/PublicProgramFooter"
 import { isValidCpf } from "../utils/cpf"
 
@@ -56,7 +56,7 @@ export default function PublicRegister() {
         if (cancelled) return
         setTenantName(json.tenant?.name || "")
         const bg = json.tenant?.background_image_url
-        setBackgroundUrl(bg ? apiUrl(bg) : null)
+        setBackgroundUrl(bg ? mediaSrc(bg) : null)
       } catch (e) {
         if (!cancelled) setError(e.message || "Não foi possível carregar.")
       } finally {

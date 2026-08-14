@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react"
-import { fetchApi, apiUrl, getToken } from "../api"
+import { fetchApi, apiUrl, getToken, mediaSrc } from "../api"
 
 function descToUpper(s) {
   return String(s).toLocaleUpperCase("pt-BR")
@@ -146,7 +146,7 @@ export default function Products() {
                   <input id="prod-img" type="file" accept="image/*" className="form-control-file" onChange={handleImageChange} />
                   {(imageFile || editing?.image_url) && (
                     <small className="form-text text-muted">
-                      {imageFile ? "Nova imagem selecionada. Salve para gravar." : "Imagem no banco. Selecione outra para substituir."}
+                      {imageFile ? "Nova imagem selecionada. Salve para gravar." : "Imagem já cadastrada. Selecione outra para substituir."}
                     </small>
                   )}
                 </div>
@@ -243,7 +243,7 @@ export default function Products() {
                       {p.image_url ? (
                         <img
                           loading="lazy"
-                          src={p.image_url.startsWith("http") ? p.image_url : apiUrl(p.image_url)}
+                          src={mediaSrc(p.image_url)}
                           alt=""
                           className="rounded"
                           style={{ maxWidth: 60, maxHeight: 60, objectFit: "cover" }}

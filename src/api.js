@@ -7,6 +7,13 @@ export function apiUrl(path = "") {
   return `${base}${p}`
 }
 
+/** URL de mídia: absoluta (R2) sai direto; relativa passa pela API. */
+export function mediaSrc(path = "") {
+  if (!path) return ""
+  if (path.startsWith("http://") || path.startsWith("https://")) return path
+  return apiUrl(path)
+}
+
 /** Origem do front (links públicos para clientes). Override: VITE_PUBLIC_UI_ORIGIN. */
 export function getPublicUiOrigin() {
   const fromEnv = (import.meta.env.VITE_PUBLIC_UI_ORIGIN || "").trim().replace(/\/$/, "")
