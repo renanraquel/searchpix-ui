@@ -16,7 +16,7 @@ function nomeDesignadoParte(parte, papel) {
 }
 
 /** Monta o texto final das designações da semana. */
-function montarTextoSemana(partes = []) {
+function montarTextoSemana(partes = [], rotulo = "") {
   const ordenadas = [...partes].sort((a, b) => (a.ordem || 0) - (b.ordem || 0))
   const linhasTesouros = []
   const linhasMinisterio = []
@@ -63,7 +63,11 @@ function montarTextoSemana(partes = []) {
   if (linhasMinisterio.length) blocos.push(linhasMinisterio.join("\n"))
   if (linhasVida.length) blocos.push(linhasVida.join("\n"))
   if (linhasFinais.length) blocos.push(linhasFinais.join("\n"))
-  return blocos.join("\n\n")
+  const corpo = blocos.join("\n\n")
+  const header = String(rotulo || "").trim()
+  if (!header) return corpo
+  if (!corpo) return header
+  return `${header}\n\n${corpo}`
 }
 
 export default function DesignacoesSemana() {
@@ -287,7 +291,7 @@ export default function DesignacoesSemana() {
 
   async function gerarTextoSemana() {
     if (!detalhe) return
-    const texto = montarTextoSemana(detalhe.partes || [])
+    const texto = montarTextoSemana(detalhe.partes || [], detalhe.rotulo)
     setTextoSemana(texto)
     const ok = await copyToClipboard(texto)
     setSuccess(ok ? "Texto da semana gerado e copiado." : "Texto da semana gerado.")
