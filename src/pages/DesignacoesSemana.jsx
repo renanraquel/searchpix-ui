@@ -86,6 +86,8 @@ export default function DesignacoesSemana() {
   const [assignPapel, setAssignPapel] = useState("dono")
   const [mostrarInelegiveis, setMostrarInelegiveis] = useState(false)
   const [textoSemana, setTextoSemana] = useState("")
+  const [apostilaTexto, setApostilaTexto] = useState("")
+  const [importando, setImportando] = useState(false)
 
   const loadSemanas = useCallback(async () => {
     const res = await fetchApi("/api/desig/semanas")
@@ -120,6 +122,43 @@ export default function DesignacoesSemana() {
       }
     })()
   }, [loadSemanas, loadTipos])
+
+  async function importarApostila() {
+    const texto = apostilaTexto.trim()
+    if (!texto) {
+      setError("Cole o texto da página da apostila (WOL) antes de importar.")
+      return
+    }
+    setError("")
+    setSuccess("")
+    setImportando(true)
+    try {
+      const res = await fetchApi("/api/desig/apostila/import", {
+        method: "POST",
+        body: JSON.stringify({ texto, data: dataNova }),
+      })
+      if (!res.ok) throw new Error(await res.text())
+      const data = await res.json()
+      if (data.semana) {
+        setDetalhe(data.semana)
+        setTextoSemana("")
+      }
+      await loadSemanas()
+      const avisos = Array.isArray(data.avisos) ? data.avisos.filter(Boolean) : []
+      const n = data.designacoes_preenchidas || 0
+      let msg = data.criou_semana
+        ? `Semana ${data.semana?.rotulo} criada. ${n} designação(ões) sugerida(s). Conferir abaixo.`
+        : `Semana ${data.semana?.rotulo} atualizada. ${n} designação(ões) sugerida(s). Conferir abaixo.`
+      if (avisos.length) {
+        msg += " " + avisos.join(" ")
+      }
+      setSuccess(msg)
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setImportando(false)
+    }
+  }
 
   async function criarSemana() {
     setError("")
@@ -365,6 +404,33 @@ export default function DesignacoesSemana() {
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="card mb-4">
+        <div className="card-body">
+          <h4 className="card-title mb-2">Importar apostila (1 página)</h4>
+          <p className="text-muted mb-3">
+            Abra a semana no WOL, copie o texto da página (Ctrl+A, Ctrl+C) e cole aqui. O sistema monta as
+            partes, sugere os irmãos e você só confere.
+          </p>
+          <div className="form-group">
+            <textarea
+              className="form-control"
+              rows={8}
+              value={apostilaTexto}
+              onChange={(e) => setApostilaTexto(e.target.value)}
+              placeholder="Cole aqui, por exemplo: 26 DE OUTUBRO–1.º DE NOVEMBRO … 1. Jeová é um Juiz justo…"
+            />
+          </div>
+          <button
+            type="button"
+            className="btn btn-success"
+            onClick={importarApostila}
+            disabled={importando || loading}
+          >
+            {importando ? "Importando…" : "Importar página e sugerir designações"}
+          </button>
         </div>
       </div>
 
