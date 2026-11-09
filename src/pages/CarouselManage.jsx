@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { fetchApi, apiUrl, getToken, getTenant, getCarouselPublicUrl } from "../api"
 
 function mediaPreviewUrl(item, tenantSlug) {
@@ -20,11 +20,14 @@ export default function CarouselManage() {
   const [settings, setSettings] = useState({ image_duration_seconds: 20 })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-  const [editing, setEditing] = useState(null)
+  const [editingId, setEditingId] = useState(null)
   const [mediaFile, setMediaFile] = useState(null)
+  const [newMediaFile, setNewMediaFile] = useState(null)
+  const [savingItem, setSavingItem] = useState(false)
   const [savingSettings, setSavingSettings] = useState(false)
   const [settingsMsg, setSettingsMsg] = useState("")
   const [reordering, setReordering] = useState(false)
+  const editFileRef = useRef(null)
 
   const publicUrl = tenantSlug ? getCarouselPublicUrl(tenantSlug) : ""
 
@@ -55,18 +58,33 @@ export default function CarouselManage() {
     load()
   }, [])
 
-  function resetForm() {
-    setMediaFile(null)
-    setEditing(null)
-  }
-
-  function handleMediaChange(e) {
-    const file = e.target.files?.[0]
-    if (!file) return
+  function validateMediaFile(file) {
+    if (!file) return "Selecione uma imagem ou vídeo."
     const isImage = file.type.startsWith("image/")
     const isVideo = file.type.startsWith("video/")
-    if (!isImage && !isVideo) {
-      setError("Selecione uma imagem ou vídeo.")
+    if (!isImage && !isVideo) return "Selecione uma imagem ou vídeo."
+    return ""
+  }
+
+  function handleNewMediaChange(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const err = validateMediaFile(file)
+    if (err) {
+      setError(err)
+      return
+    }
+    setError("")
+    setNewMediaFile(file)
+    e.target.value = ""
+  }
+
+  function handleEditMediaChange(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const err = validateMediaFile(file)
+    if (err) {
+      setError(err)
       return
     }
     setError("")
@@ -74,30 +92,58 @@ export default function CarouselManage() {
     e.target.value = ""
   }
 
-  async function handleSubmit(e) {
+  async function handleCreate(e) {
     e.preventDefault()
-    if (!editing && !mediaFile) {
-      setError("Selecione uma imagem ou vídeo para cadastrar.")
+    const err = validateMediaFile(newMediaFile)
+    if (err) {
+      setError(err)
       return
     }
     setError("")
+    setSavingItem(true)
     try {
       const formData = new FormData()
-      if (mediaFile) formData.append("media", mediaFile)
+      formData.append("media", newMediaFile)
       const token = getToken()
-      const url = editing
-        ? apiUrl(`/api/carousel/items/update?id=${editing.id}`)
-        : apiUrl("/api/carousel/items/create")
-      const res = await fetch(url, {
+      const res = await fetch(apiUrl("/api/carousel/items/create"), {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
       })
       if (!res.ok) throw new Error(await res.text())
-      resetForm()
-      load()
+      setNewMediaFile(null)
+      await load()
     } catch (e) {
       setError(e.message)
+    } finally {
+      setSavingItem(false)
+    }
+  }
+
+  async function handleSaveEdit() {
+    if (!editingId) return
+    if (!mediaFile) {
+      setError("Selecione a nova imagem ou vídeo para substituir.")
+      return
+    }
+    setError("")
+    setSavingItem(true)
+    try {
+      const formData = new FormData()
+      formData.append("media", mediaFile)
+      const token = getToken()
+      const res = await fetch(apiUrl(`/api/carousel/items/update?id=${editingId}`), {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      })
+      if (!res.ok) throw new Error(await res.text())
+      cancelEdit()
+      await load()
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setSavingItem(false)
     }
   }
 
@@ -106,6 +152,7 @@ export default function CarouselManage() {
     try {
       const res = await fetchApi(`/api/carousel/items/delete?id=${id}`, { method: "POST" })
       if (!res.ok) throw new Error(await res.text())
+      if (editingId === id) cancelEdit()
       load()
     } catch (e) {
       setError(e.message)
@@ -113,7 +160,14 @@ export default function CarouselManage() {
   }
 
   function startEdit(item) {
-    setEditing(item)
+    setEditingId(item.id)
+    setMediaFile(null)
+    setError("")
+    setTimeout(() => editFileRef.current?.focus?.(), 0)
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
     setMediaFile(null)
   }
 
@@ -194,40 +248,38 @@ export default function CarouselManage() {
         </div>
       )}
 
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      )}
+
       <div className="row">
         <div className="col-md-5 grid-margin stretch-card">
           <div className="card">
             <div className="card-body">
-              <h4 className="card-title">{editing ? "Editar item" : "Novo item"}</h4>
-              {error && <div className="alert alert-danger">{error}</div>}
-              <form onSubmit={handleSubmit}>
+              <h4 className="card-title">Novo item</h4>
+              <form onSubmit={handleCreate}>
                 <div className="form-group">
-                  <label>{editing ? "Substituir mídia (opcional)" : "Imagem ou vídeo"}</label>
+                  <label>Imagem ou vídeo</label>
                   <input
                     type="file"
                     className="form-control"
                     accept="image/*,video/*"
-                    onChange={handleMediaChange}
+                    onChange={handleNewMediaChange}
                   />
-                  {mediaFile && (
+                  {newMediaFile && (
                     <small className="text-muted d-block mt-1">
-                      Arquivo: {mediaFile.name} ({mediaFile.type})
+                      Arquivo: {newMediaFile.name} ({newMediaFile.type})
                     </small>
                   )}
-                  {!editing && (
-                    <small className="text-muted d-block mt-1">
-                      A ordem é definida automaticamente conforme o cadastro.
-                    </small>
-                  )}
+                  <small className="text-muted d-block mt-1">
+                    A ordem é definida automaticamente conforme o cadastro.
+                  </small>
                 </div>
-                <button type="submit" className="btn btn-primary mr-2">
-                  {editing ? "Salvar" : "Cadastrar"}
+                <button type="submit" className="btn btn-primary" disabled={savingItem}>
+                  {savingItem && !editingId ? "Cadastrando…" : "Cadastrar"}
                 </button>
-                {editing && (
-                  <button type="button" className="btn btn-light" onClick={resetForm}>
-                    Cancelar
-                  </button>
-                )}
               </form>
             </div>
           </div>
@@ -272,21 +324,22 @@ export default function CarouselManage() {
                         <th>Ordem</th>
                         <th>Prévia</th>
                         <th>Tipo</th>
-                        <th />
+                        <th>Ações</th>
                       </tr>
                     </thead>
                     <tbody>
                       {list.map((item, index) => {
                         const url = mediaPreviewUrl(item, tenantSlug)
+                        const isEditing = editingId === item.id
                         return (
-                          <tr key={item.id}>
-                            <td className="text-nowrap">
+                          <tr key={item.id} className={isEditing ? "table-info" : undefined}>
+                            <td className="text-nowrap align-middle">
                               <span className="mr-2">{index + 1}</span>
                               <button
                                 type="button"
                                 className="btn btn-sm btn-outline-secondary py-0 px-1"
                                 title="Subir"
-                                disabled={index === 0 || reordering}
+                                disabled={index === 0 || reordering || isEditing}
                                 onClick={() => moveItem(index, -1)}
                               >
                                 <i className="mdi mdi-chevron-up" />
@@ -295,13 +348,13 @@ export default function CarouselManage() {
                                 type="button"
                                 className="btn btn-sm btn-outline-secondary py-0 px-1"
                                 title="Descer"
-                                disabled={index === list.length - 1 || reordering}
+                                disabled={index === list.length - 1 || reordering || isEditing}
                                 onClick={() => moveItem(index, 1)}
                               >
                                 <i className="mdi mdi-chevron-down" />
                               </button>
                             </td>
-                            <td style={{ width: 120 }}>
+                            <td style={{ width: 120 }} className="align-middle">
                               {item.media_type === "video" ? (
                                 <video
                                   src={url}
@@ -318,22 +371,62 @@ export default function CarouselManage() {
                                 />
                               )}
                             </td>
-                            <td>{item.media_type === "video" ? "Vídeo" : "Imagem"}</td>
-                            <td className="text-nowrap">
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-outline-primary mr-1"
-                                onClick={() => startEdit(item)}
-                              >
-                                Editar
-                              </button>
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-outline-danger"
-                                onClick={() => handleDelete(item.id)}
-                              >
-                                Excluir
-                              </button>
+                            <td className="align-middle">{item.media_type === "video" ? "Vídeo" : "Imagem"}</td>
+                            <td className="align-middle" style={{ minWidth: isEditing ? 280 : undefined }}>
+                              {isEditing ? (
+                                <div>
+                                  <label className="small font-weight-bold d-block mb-1">
+                                    Escolher nova imagem ou vídeo
+                                  </label>
+                                  <input
+                                    ref={editFileRef}
+                                    type="file"
+                                    className="form-control form-control-sm mb-2"
+                                    accept="image/*,video/*"
+                                    onChange={handleEditMediaChange}
+                                  />
+                                  {mediaFile && (
+                                    <small className="text-muted d-block mb-2">
+                                      Novo arquivo: {mediaFile.name}
+                                    </small>
+                                  )}
+                                  <div className="d-flex flex-wrap">
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm btn-primary mr-1 mb-1"
+                                      disabled={savingItem || !mediaFile}
+                                      onClick={handleSaveEdit}
+                                    >
+                                      {savingItem ? "Salvando…" : "Salvar nova mídia"}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm btn-light mb-1"
+                                      disabled={savingItem}
+                                      onClick={cancelEdit}
+                                    >
+                                      Cancelar
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="text-nowrap">
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-primary mr-1"
+                                    onClick={() => startEdit(item)}
+                                  >
+                                    Editar
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-danger"
+                                    onClick={() => handleDelete(item.id)}
+                                  >
+                                    Excluir
+                                  </button>
+                                </div>
+                              )}
                             </td>
                           </tr>
                         )
