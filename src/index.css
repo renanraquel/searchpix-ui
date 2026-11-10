@@ -148,129 +148,74 @@ button:not([class*='btn']) {
   color: #1e40af;
 }
 
-/* Receituário — preview A4 e impressão */
+/* Receituário — preview sobre o template da cliente */
 .receituario-page .form-group > label {
   color: #908d3d;
   font-weight: 700;
 }
 
+.receituario-preview-card .card-body {
+  overflow-x: auto;
+}
+
 .receituario-sheet {
-  font-family: "Century Gothic", CenturyGothic, AppleGothic, "Segoe UI", sans-serif;
-  color: #222;
-  max-width: 210mm;
+  position: relative;
+  width: 210mm;
+  max-width: 100%;
+  aspect-ratio: 210 / 297;
   margin: 0 auto;
-  padding: 12mm 14mm;
-  background: #fff;
-  min-height: 250mm;
+  background: #fff url("/receituario-template.jpg") center / 100% 100% no-repeat;
+  overflow: hidden;
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: #1a1a1a;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
 }
 
-.receituario-sheet-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #d4d0a8;
-}
-
-.receituario-logo {
-  width: 110px;
-  height: auto;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-.receituario-profissional {
-  text-align: right;
-  font-size: 0.95rem;
-  line-height: 1.45;
-}
-
-.receituario-profissional-nome {
-  font-weight: 700;
-  font-size: 1.05rem;
-  margin-bottom: 0.25rem;
-}
-
-.receituario-meta {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 1rem 2rem;
-  margin-bottom: 1.75rem;
-}
-
-.receituario-meta-row {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  flex: 1 1 220px;
-}
-
-.receituario-meta-data {
-  flex: 0 0 auto;
-}
-
-.receituario-label {
-  font-weight: 700;
-  color: #555;
-}
-
-.receituario-value {
+.receituario-field-nome {
+  position: absolute;
+  left: 16.5%;
+  top: 26.4%;
+  width: 52%;
+  font-size: clamp(0.85rem, 2.1vw, 1.05rem);
   font-weight: 600;
-  border-bottom: 1px solid #ccc;
-  min-width: 8rem;
-  padding-bottom: 0.1rem;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.receituario-descricao {
-  font-size: 1.05rem;
-  line-height: 1.55;
+.receituario-field-descricao {
+  position: absolute;
+  left: 10%;
+  top: 32%;
+  width: 80%;
+  height: 36%;
+  font-size: clamp(0.8rem, 1.9vw, 0.98rem);
+  line-height: 1.45;
+  overflow: hidden;
   white-space: pre-wrap;
 }
 
-.receituario-descricao p {
-  margin: 0 0 0.35rem;
+.receituario-field-descricao p {
+  margin: 0 0 0.2em;
+}
+
+.receituario-field-data {
+  position: absolute;
+  left: 16%;
+  top: 71.6%;
+  width: 40%;
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  font-weight: 600;
+  line-height: 1.15;
 }
 
 @media print {
-  body * {
-    visibility: hidden !important;
-  }
-
-  .receituario-preview-card,
-  .receituario-preview-card * {
-    visibility: visible !important;
-  }
-
-  .receituario-preview-card {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-
-  .receituario-preview-card .card-body {
-    padding: 0 !important;
-  }
-
-  .receituario-sheet {
-    max-width: none;
-    min-height: auto;
-    padding: 0;
-  }
-
-  .no-print {
-    display: none !important;
-  }
-
+  .no-print,
   .navbar,
   .sidebar,
-  .sidebar-mobile-backdrop {
+  .sidebar-mobile-backdrop,
+  .page-header {
     display: none !important;
   }
 }

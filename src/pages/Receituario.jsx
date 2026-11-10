@@ -1,14 +1,94 @@
 import { useState } from "react"
 
-const PROFISSIONAL = {
-  nome: "Vera Lucia Ronque Rodrigues",
-  coren: "Coren PR/472776",
-  endereco: "Rua: Acre 201",
-  telefone: "Telefone: 991197470",
-}
-
 function formatDataHoje() {
   return new Date().toLocaleDateString("pt-BR")
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+}
+
+function templateUrl() {
+  return `${window.location.origin}/receituario-template.jpg`
+}
+
+function buildPrintHtml({ nome, descricao, data }, bgUrl) {
+  const descricaoHtml = escapeHtml(descricao)
+    .split("\n")
+    .map((line) => `<p>${line || "&nbsp;"}</p>`)
+    .join("")
+
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title></title>
+  <style>
+    @page { size: A4 portrait; margin: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 210mm;
+      height: 297mm;
+      background: #fff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .sheet {
+      position: relative;
+      width: 210mm;
+      height: 297mm;
+      background: #fff url("${bgUrl}") center / 100% 100% no-repeat;
+      overflow: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #111;
+    }
+    .field-nome {
+      position: absolute;
+      left: 16.5%;
+      top: 26.4%;
+      width: 52%;
+      font-size: 14pt;
+      font-weight: 600;
+      line-height: 1.15;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .field-descricao {
+      position: absolute;
+      left: 10%;
+      top: 32%;
+      width: 80%;
+      height: 36%;
+      font-size: 13pt;
+      line-height: 1.45;
+      overflow: hidden;
+      white-space: pre-wrap;
+    }
+    .field-descricao p { margin: 0 0 0.2em; }
+    .field-data {
+      position: absolute;
+      left: 16%;
+      top: 71.6%;
+      width: 40%;
+      font-size: 14pt;
+      font-weight: 600;
+      line-height: 1.15;
+    }
+  </style>
+</head>
+<body>
+  <div class="sheet">
+    <div class="field-nome">${escapeHtml(nome)}</div>
+    <div class="field-descricao">${descricaoHtml}</div>
+    <div class="field-data">${escapeHtml(data)}</div>
+  </div>
+</body>
+</html>`
 }
 
 export default function Receituario() {
@@ -47,7 +127,27 @@ export default function Receituario() {
   }
 
   function handleImprimir() {
-    window.print()
+    if (!preview) return
+    const bgUrl = templateUrl()
+    const html = buildPrintHtml(preview, bgUrl)
+    const w = window.open("", "_blank", "noopener,noreferrer,width=900,height=1200")
+    if (!w) {
+      setError("Permita pop-ups para imprimir a receita.")
+      return
+    }
+    w.document.open()
+    w.document.write(html)
+    w.document.close()
+
+    const triggerPrint = () => {
+      w.focus()
+      w.print()
+    }
+
+    const img = new w.Image()
+    img.onload = () => setTimeout(triggerPrint, 200)
+    img.onerror = () => setTimeout(triggerPrint, 400)
+    img.src = bgUrl
   }
 
   return (
@@ -100,39 +200,16 @@ export default function Receituario() {
       </div>
 
       {preview && (
-        <div className="card receituario-preview-card">
+        <div className="card receituario-preview-card no-print">
           <div className="card-body">
-            <div className="receituario-sheet" id="receituario-print-area">
-              <header className="receituario-sheet-header">
-                <img
-                  src="/receituario-logo.png"
-                  alt="Ronque Rodrigues"
-                  className="receituario-logo"
-                />
-                <div className="receituario-profissional">
-                  <div className="receituario-profissional-nome">{PROFISSIONAL.nome}</div>
-                  <div>{PROFISSIONAL.coren}</div>
-                  <div>{PROFISSIONAL.endereco}</div>
-                  <div>{PROFISSIONAL.telefone}</div>
-                </div>
-              </header>
-
-              <div className="receituario-meta">
-                <div className="receituario-meta-row">
-                  <span className="receituario-label">NOME:</span>
-                  <span className="receituario-value">{preview.nome}</span>
-                </div>
-                <div className="receituario-meta-row receituario-meta-data">
-                  <span className="receituario-label">DATA:</span>
-                  <span className="receituario-value">{preview.data}</span>
-                </div>
-              </div>
-
-              <div className="receituario-descricao">
+            <div className="receituario-sheet" aria-label="Pré-visualização da receita">
+              <div className="receituario-field-nome">{preview.nome}</div>
+              <div className="receituario-field-descricao">
                 {preview.descricao.split("\n").map((line, i) => (
                   <p key={i}>{line || "\u00A0"}</p>
                 ))}
               </div>
+              <div className="receituario-field-data">{preview.data}</div>
             </div>
           </div>
         </div>
