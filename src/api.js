@@ -68,6 +68,15 @@ export function isAdmin() {
   return getRole() === "admin"
 }
 
+/** Usuário com acesso exclusivo ao Receituário (sem módulos SearchPix). */
+export function isReceituarioOnly() {
+  return getRole() === "receituario"
+}
+
+export function canAccessReceituario() {
+  return isAdmin() || isReceituarioOnly()
+}
+
 export function setAuth(token, tenant, user = null) {
   if (token) localStorage.setItem("token", token)
   else localStorage.removeItem("token")

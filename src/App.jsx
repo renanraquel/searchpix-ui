@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
-import { getToken, getTenant, isAdmin } from "./api"
+import { getToken, getTenant, isAdmin, isReceituarioOnly, canAccessReceituario } from "./api"
 import { isPixModuleEnabledForTenantSlug } from "./constants/pixModule"
 import LoginLoyalty from "./pages/LoginLoyalty"
 import Layout from "./pages/Layout"
@@ -33,11 +33,23 @@ function PrivateRoute({ children }) {
 }
 
 function AdminRoute({ children }) {
-  if (!isAdmin()) return <Navigate to="/produtos" replace />
+  if (!isAdmin()) return <Navigate to={appHomePath()} replace />
+  return children
+}
+
+/** Bloqueia telas do SearchPix para o usuário exclusivo do Receituário. */
+function LoyaltyRoute({ children }) {
+  if (isReceituarioOnly()) return <Navigate to="/receituario" replace />
+  return children
+}
+
+function ReceituarioRoute({ children }) {
+  if (!canAccessReceituario()) return <Navigate to={appHomePath()} replace />
   return children
 }
 
 function appHomePath() {
+  if (isReceituarioOnly()) return "/receituario"
   const t = getTenant()
   return isPixModuleEnabledForTenantSlug(t?.slug) ? "/pix" : "/produtos"
 }
@@ -47,6 +59,7 @@ function NavigateToAppHome() {
 }
 
 function PrivatePixRoute() {
+  if (isReceituarioOnly()) return <Navigate to="/receituario" replace />
   const t = getTenant()
   if (!isPixModuleEnabledForTenantSlug(t?.slug)) {
     return <Navigate to="/produtos" replace />
@@ -89,13 +102,62 @@ export default function App() {
         >
           <Route index element={<NavigateToAppHome />} />
           <Route path="pix" element={<PrivatePixRoute />} />
-          <Route path="produtos" element={<Products />} />
-          <Route path="clientes" element={<Customers />} />
-          <Route path="pontos" element={<Points />} />
-          <Route path="parametros-sistema" element={<SystemParams />} />
-          <Route path="resgates" element={<Redemptions />} />
-          <Route path="resgates/efetuar" element={<EfetuarResgate />} />
-          <Route path="carrossel" element={<CarouselManage />} />
+          <Route
+            path="produtos"
+            element={
+              <LoyaltyRoute>
+                <Products />
+              </LoyaltyRoute>
+            }
+          />
+          <Route
+            path="clientes"
+            element={
+              <LoyaltyRoute>
+                <Customers />
+              </LoyaltyRoute>
+            }
+          />
+          <Route
+            path="pontos"
+            element={
+              <LoyaltyRoute>
+                <Points />
+              </LoyaltyRoute>
+            }
+          />
+          <Route
+            path="parametros-sistema"
+            element={
+              <LoyaltyRoute>
+                <SystemParams />
+              </LoyaltyRoute>
+            }
+          />
+          <Route
+            path="resgates"
+            element={
+              <LoyaltyRoute>
+                <Redemptions />
+              </LoyaltyRoute>
+            }
+          />
+          <Route
+            path="resgates/efetuar"
+            element={
+              <LoyaltyRoute>
+                <EfetuarResgate />
+              </LoyaltyRoute>
+            }
+          />
+          <Route
+            path="carrossel"
+            element={
+              <LoyaltyRoute>
+                <CarouselManage />
+              </LoyaltyRoute>
+            }
+          />
           <Route
             path="designacoes/irmaos"
             element={
@@ -123,9 +185,9 @@ export default function App() {
           <Route
             path="receituario"
             element={
-              <AdminRoute>
+              <ReceituarioRoute>
                 <Receituario />
-              </AdminRoute>
+              </ReceituarioRoute>
             }
           />
         </Route>

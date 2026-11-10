@@ -148,6 +148,21 @@ button:not([class*='btn']) {
   color: #1e40af;
 }
 
+/* Layout exclusivo do usuário Receituário (sem sidebar / links SearchPix) */
+.receituario-only-layout .page-body-wrapper {
+  padding-left: 0 !important;
+}
+
+.receituario-only-layout .main-panel {
+  margin-left: 0 !important;
+  width: 100% !important;
+}
+
+.receituario-only-layout .navbar-brand-wrapper {
+  width: auto;
+  min-width: 160px;
+}
+
 /* Receituário — preview sobre o template da cliente */
 .receituario-page .form-group > label {
   color: #908d3d;

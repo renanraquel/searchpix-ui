@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react"
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom"
-import { setAuth, getTenant, getPontosNotaPublicUrl, isAdmin } from "../api"
+import {
+  setAuth,
+  getTenant,
+  getPontosNotaPublicUrl,
+  isAdmin,
+  isReceituarioOnly,
+  canAccessReceituario,
+} from "../api"
 import { isPixModuleEnabledForTenantSlug } from "../constants/pixModule"
 
 function SidebarLink({ to, end, icon, children, onNavigate }) {
@@ -25,11 +32,13 @@ export default function Layout({ onLogout }) {
   const navigate = useNavigate()
   const location = useLocation()
   const tenant = getTenant()
-  const showPixModule = isPixModuleEnabledForTenantSlug(tenant?.slug)
+  const receituarioOnly = isReceituarioOnly()
+  const showPixModule = !receituarioOnly && isPixModuleEnabledForTenantSlug(tenant?.slug)
   const showDesignacoes = isAdmin()
-  const showReceituario = isAdmin()
-  const homePath = showPixModule ? "/pix" : "/produtos"
-  const pontosNotaDivulgeUrl = tenant?.slug ? getPontosNotaPublicUrl(tenant.slug) : ""
+  const showReceituario = canAccessReceituario()
+  const homePath = receituarioOnly ? "/receituario" : showPixModule ? "/pix" : "/produtos"
+  const pontosNotaDivulgeUrl =
+    !receituarioOnly && tenant?.slug ? getPontosNotaPublicUrl(tenant.slug) : ""
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -61,6 +70,40 @@ export default function Layout({ onLogout }) {
     setAuth(null, null, null)
     onLogout?.()
     navigate("/login")
+  }
+
+  if (receituarioOnly) {
+    return (
+      <div className="container-scroller receituario-only-layout">
+        <nav className="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+          <div className="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+            <NavLink
+              className="navbar-brand app-brand-text-link d-flex align-items-center justify-content-center w-100"
+              to="/receituario"
+            >
+              <span className="app-brand-text">Receituário</span>
+            </NavLink>
+          </div>
+          <div className="navbar-menu-wrapper d-flex align-items-stretch flex-grow-1">
+            <ul className="navbar-nav navbar-nav-right ml-auto align-items-center layout-navbar-user-actions">
+              <li className="nav-item">
+                <button type="button" className="btn btn-primary btn-sm" onClick={logout}>
+                  Sair
+                </button>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <div className="container-fluid page-body-wrapper position-relative">
+          <div className="main-panel w-100" style={{ marginLeft: 0, width: "100%" }}>
+            <div className="content-wrapper">
+              <Outlet />
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
