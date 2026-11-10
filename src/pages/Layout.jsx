@@ -27,6 +27,7 @@ export default function Layout({ onLogout }) {
   const tenant = getTenant()
   const showPixModule = isPixModuleEnabledForTenantSlug(tenant?.slug)
   const showDesignacoes = isAdmin()
+  const showReceituario = isAdmin()
   const homePath = showPixModule ? "/pix" : "/produtos"
   const pontosNotaDivulgeUrl = tenant?.slug ? getPontosNotaPublicUrl(tenant.slug) : ""
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -166,6 +167,11 @@ export default function Layout({ onLogout }) {
                   Lembretes
                 </SidebarLink>
               </>
+            )}
+            {showReceituario && (
+              <SidebarLink to="/receituario" icon="mdi-file-document-box" onNavigate={closeMobileMenu}>
+                Receituario
+              </SidebarLink>
             )}
           </ul>
         </nav>

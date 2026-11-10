@@ -24,6 +24,7 @@ import PublicCarousel from "./pages/PublicCarousel"
 import DesignacoesIrmaos from "./pages/DesignacoesIrmaos"
 import DesignacoesSemana from "./pages/DesignacoesSemana"
 import DesignacoesLembretes from "./pages/DesignacoesLembretes"
+import Receituario from "./pages/Receituario"
 
 function PrivateRoute({ children }) {
   const token = getToken()
@@ -116,6 +117,14 @@ export default function App() {
             element={
               <AdminRoute>
                 <DesignacoesLembretes />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="receituario"
+            element={
+              <AdminRoute>
+                <Receituario />
               </AdminRoute>
             }
           />

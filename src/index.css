@@ -147,3 +147,130 @@ button:not([class*='btn']) {
   border-color: #93c5fd;
   color: #1e40af;
 }
+
+/* Receituário — preview A4 e impressão */
+.receituario-page .form-group > label {
+  color: #908d3d;
+  font-weight: 700;
+}
+
+.receituario-sheet {
+  font-family: "Century Gothic", CenturyGothic, AppleGothic, "Segoe UI", sans-serif;
+  color: #222;
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 12mm 14mm;
+  background: #fff;
+  min-height: 250mm;
+}
+
+.receituario-sheet-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #d4d0a8;
+}
+
+.receituario-logo {
+  width: 110px;
+  height: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.receituario-profissional {
+  text-align: right;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.receituario-profissional-nome {
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin-bottom: 0.25rem;
+}
+
+.receituario-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  margin-bottom: 1.75rem;
+}
+
+.receituario-meta-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex: 1 1 220px;
+}
+
+.receituario-meta-data {
+  flex: 0 0 auto;
+}
+
+.receituario-label {
+  font-weight: 700;
+  color: #555;
+}
+
+.receituario-value {
+  font-weight: 600;
+  border-bottom: 1px solid #ccc;
+  min-width: 8rem;
+  padding-bottom: 0.1rem;
+}
+
+.receituario-descricao {
+  font-size: 1.05rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.receituario-descricao p {
+  margin: 0 0 0.35rem;
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  .receituario-preview-card,
+  .receituario-preview-card * {
+    visibility: visible !important;
+  }
+
+  .receituario-preview-card {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .receituario-preview-card .card-body {
+    padding: 0 !important;
+  }
+
+  .receituario-sheet {
+    max-width: none;
+    min-height: auto;
+    padding: 0;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .navbar,
+  .sidebar,
+  .sidebar-mobile-backdrop {
+    display: none !important;
+  }
+}
