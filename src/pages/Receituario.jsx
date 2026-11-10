@@ -128,23 +128,56 @@ export default function Receituario() {
 
   function handleImprimir() {
     if (!preview) return
+    setError("")
+
     const bgUrl = templateUrl()
     const html = buildPrintHtml(preview, bgUrl)
-    const w = window.open("", "_blank", "noopener,noreferrer,width=900,height=1200")
-    if (!w) {
-      setError("Permita pop-ups para imprimir a receita.")
+
+    // iframe oculto: não dispara bloqueio de pop-up
+    const existing = document.getElementById("receituario-print-frame")
+    if (existing) existing.remove()
+
+    const iframe = document.createElement("iframe")
+    iframe.id = "receituario-print-frame"
+    iframe.title = "Impressão receituário"
+    iframe.setAttribute("aria-hidden", "true")
+    Object.assign(iframe.style, {
+      position: "fixed",
+      right: "0",
+      bottom: "0",
+      width: "0",
+      height: "0",
+      border: "0",
+      visibility: "hidden",
+    })
+    document.body.appendChild(iframe)
+
+    const frameWindow = iframe.contentWindow
+    const frameDoc = frameWindow?.document
+    if (!frameWindow || !frameDoc) {
+      setError("Não foi possível preparar a impressão.")
+      iframe.remove()
       return
     }
-    w.document.open()
-    w.document.write(html)
-    w.document.close()
 
-    const triggerPrint = () => {
-      w.focus()
-      w.print()
+    frameDoc.open()
+    frameDoc.write(html)
+    frameDoc.close()
+
+    const cleanup = () => {
+      setTimeout(() => iframe.remove(), 1000)
     }
 
-    const img = new w.Image()
+    const triggerPrint = () => {
+      try {
+        frameWindow.focus()
+        frameWindow.print()
+      } finally {
+        cleanup()
+      }
+    }
+
+    const img = new frameWindow.Image()
     img.onload = () => setTimeout(triggerPrint, 200)
     img.onerror = () => setTimeout(triggerPrint, 400)
     img.src = bgUrl
