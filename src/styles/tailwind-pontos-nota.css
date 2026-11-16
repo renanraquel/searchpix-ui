@@ -3,10 +3,17 @@
 
 /* Font stack + antialiasing scoped to loyalty page root */
 #pontos-nota-root,
-#pricing-onboarding-root {
-  font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+#pricing-onboarding-root,
+#resgatar-root {
+  font-family: "Outfit", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /* Herança do Connect Plus (body #a7afb7) quebra contraste se utilities não carregarem */
   color: #0f172a;
+}
+
+#resgatar-root {
+  --resgatar-accent: #059669;
+  --resgatar-accent-soft: #d1fae5;
+  --resgatar-gold: #f59e0b;
 }

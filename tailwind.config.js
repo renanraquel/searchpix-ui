@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   /* Utilities precisam vencer o body { color: #a7afb7 } do Connect Plus em todas as páginas Tailwind */
-  important: ":is(#pontos-nota-root, #pricing-onboarding-root)",
+  important: ":is(#pontos-nota-root, #pricing-onboarding-root, #resgatar-root)",
   corePlugins: {
     preflight: false,
   },
